@@ -22,7 +22,7 @@ namespace ItemsStore.Tests.Utility
         {
             var entity = new RelicEntity
             {
-                Id = "12345",
+                Id = 12345,
                 Name = "Lith A1",
                 RelicName = "lith_a1",
                 RelicType = RelicType.LITH,
@@ -50,7 +50,7 @@ namespace ItemsStore.Tests.Utility
         {
             var entity = new RelicEntity
             {
-                Id = "12345",
+                Id = 12345,
                 Name = "Test Relic",
                 RelicName = "test_relic",
                 RelicType = type,

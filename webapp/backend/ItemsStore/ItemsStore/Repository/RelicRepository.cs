@@ -4,6 +4,7 @@ using ItemsStore.Database;
 using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Utility;
+using ItemsStore.Utility.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Repository
@@ -24,8 +25,8 @@ namespace ItemsStore.Repository
             var newRelic = new RelicEntity()
             {
                 Name = relic.Name,
-                RelicName = relic.Name.ToLower().Replace(" ", "_"),
-                RelicType = RelicUtils.GetRelicTypeEnum(relic.Type),
+                RelicName = relic.Name.ToSnakeCase(),
+                RelicType = relic.Type,
                 RelicCode = relic.Code
             };
 
@@ -59,14 +60,14 @@ namespace ItemsStore.Repository
 
         public async Task<RelicEntity> GetRelic(string name)
         {
-            return await _itemsDbContext.Relics.FirstOrDefaultAsync(x => x.RelicName == name);
+            return await _itemsDbContext.Relics.FirstOrDefaultAsync(x => x.RelicName == name.ToSnakeCase());
         }
 
         public async Task<RelicEntity> UpdateRelic(AddRelicCommand relic)
         {
             var relicEntity = await GetRelic(relic.Name);
 
-            relicEntity.RelicType = RelicUtils.GetRelicTypeEnum(relic.Type);
+            relicEntity.RelicType = relic.Type;
             relicEntity.RelicCode = relic.Code;
 
             await _itemsDbContext.SaveChangesAsync();

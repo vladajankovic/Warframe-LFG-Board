@@ -2,6 +2,7 @@
 using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Utility;
+using ItemsStore.Utility.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Seed
@@ -67,7 +68,7 @@ namespace ItemsStore.Seed
                     var relicEntity = new RelicEntity
                     {
                         Name = relicName,
-                        RelicName = relicName.ToLower().Replace(" ", "_"),
+                        RelicName = relicName.ToSnakeCase(),
                         RelicType = relicType,
                         RelicCode = relicCode
                     };
@@ -118,6 +119,7 @@ namespace ItemsStore.Seed
                 var resourcesToAdd = resourceItems.Select(item => new ResourceEntity
                 {
                     Name = item.Name,
+                    ResourceName = item.Name.ToSnakeCase(),
                     Description = item.Description
                 }).ToList();
 

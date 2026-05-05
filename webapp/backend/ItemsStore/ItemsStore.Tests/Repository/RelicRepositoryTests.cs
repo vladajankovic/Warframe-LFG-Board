@@ -31,7 +31,7 @@ namespace ItemsStore.Tests.Repository
         private static RelicEntity SeedEntity(string name = "Lith A1 Intact", RelicType type = RelicType.LITH, string code = "A1") =>
             new() { Name = name, RelicName = name.ToLower().Replace(" ", "_"), RelicType = type, RelicCode = code };
 
-        private static AddRelicCommand MakeCommand(string name = "Lith A1 Intact", string type = "lith", string code = "A1") =>
+        private static AddRelicCommand MakeCommand(string name = "Lith A1 Intact", RelicType type = RelicType.LITH, string code = "A1") =>
             new() { Name = name, Type = type, Code = code };
 
         // ── CreateRelic ──────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ namespace ItemsStore.Tests.Repository
         [Fact]
         public async Task CreateRelic_SetsRelicNameLowercaseWithUnderscores()
         {
-            var command = MakeCommand("Meso B1 Intact", "meso", "B1");
+            var command = MakeCommand("Meso B1 Intact", RelicType.MESO, "B1");
 
             var result = await _repository.CreateRelic(command);
 
@@ -143,7 +143,7 @@ namespace ItemsStore.Tests.Repository
             var command = new AddRelicCommand
             {
                 Name = entity.RelicName,   // repository looks up by RelicName
-                Type = "neo",
+                Type = RelicType.NEO,
                 Code = "Z9"
             };
 

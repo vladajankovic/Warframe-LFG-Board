@@ -1,6 +1,7 @@
 ﻿using ItemsStore.Commands;
 using ItemsStore.Database;
 using ItemsStore.Database.Entity;
+using ItemsStore.Utility.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Repository
@@ -19,6 +20,7 @@ namespace ItemsStore.Repository
             var resourceEntity = new ResourceEntity
             {
                 Name = command.Name,
+                ResourceName = command.Name.ToSnakeCase(),
                 Description = command.Description
             };
             
@@ -52,7 +54,7 @@ namespace ItemsStore.Repository
 
         public async Task<ResourceEntity> GetResource(string name)
         {
-            return await _itemsDbContext.Resources.FirstOrDefaultAsync(x => x.Name == name);
+            return await _itemsDbContext.Resources.FirstOrDefaultAsync(x => x.ResourceName == name.ToSnakeCase());
         }
 
         public async Task<ResourceEntity> UpdateResource(AddResourceCommand command)

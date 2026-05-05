@@ -11,6 +11,11 @@ namespace ItemsStore.Database.Configuration
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id)
                 .UseIdentityByDefaultColumn();
+            builder.HasIndex(x => x.ResourceName)
+                .IsUnique();
+            builder.Property(x => x.ResourceName)
+                .IsRequired()
+                .HasMaxLength(128);
             builder.Property(x => x.Name)
                 .IsRequired()
                 .HasMaxLength(128);

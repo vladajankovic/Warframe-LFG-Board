@@ -72,7 +72,15 @@ namespace ItemsStore.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<string>("ResourceName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ResourceName")
+                        .IsUnique();
 
                     b.ToTable("Resources");
                 });

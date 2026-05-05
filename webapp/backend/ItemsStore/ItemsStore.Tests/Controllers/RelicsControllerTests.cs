@@ -4,6 +4,7 @@ using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -17,13 +18,14 @@ namespace ItemsStore.Tests.Controllers
         public RelicsControllerTests()
         {
             _serviceMock = new Mock<IRelicService>();
-            _controller = new RelicsController(_serviceMock.Object);
+            var loggerMock = new Mock<ILogger<RelicsController>>();
+            _controller = new RelicsController(_serviceMock.Object, loggerMock.Object);
         }
 
         private static Relic MakeRelic(string name = "Lith A1 Intact", string type = "lith", string code = "A1") =>
-            new() { Id = "id-1", Name = name, RelicType = type, RelicCode = code };
+            new() { Id = 1, Name = name, RelicType = type, RelicCode = code };
 
-        private static AddRelicCommand MakeCommand(string name = "Lith A1 Intact", string type = "lith", string code = "A1") =>
+        private static AddRelicCommand MakeCommand(string name = "Lith A1 Intact", RelicType type = RelicType.LITH, string code = "A1") =>
             new() { Name = name, Type = type, Code = code };
 
         // ── GET all ──────────────────────────────────────────────────────────────
@@ -178,11 +180,12 @@ namespace ItemsStore.Tests.Controllers
         [Fact]
         public async Task UpdateRelic_WhenNotFound_Returns404()
         {
-            _serviceMock.Setup(s => s.UpdateRelic(It.IsAny<AddRelicCommand>())).ReturnsAsync((Relic?)null);
+            _serviceMock.Setup(s => s.UpdateRelic(It.IsAny<AddRelicCommand>()))
+                .ThrowsAsync(new InvalidOperationException("Not found"));
 
             var result = await _controller.UpdateRelic(MakeCommand());
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
         }
     }
 }

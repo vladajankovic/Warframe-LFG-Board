@@ -24,10 +24,10 @@ namespace ItemsStore.Tests.Services
             _service = new RelicService(_repoMock.Object, _mapper);
         }
 
-        private static RelicEntity MakeEntity(string name = "Lith A1 Intact", RelicType type = RelicType.LITH, string code = "A1") =>
-            new() { Id = "id-1", Name = name, RelicName = name.ToLower().Replace(" ", "_"), RelicType = type, RelicCode = code };
+        private static RelicEntity MakeEntity(string name = "Lith A1", RelicType type = RelicType.LITH, string code = "A1") =>
+            new() { Id = 1, Name = name, RelicName = name.ToLower().Replace(" ", "_"), RelicType = type, RelicCode = code };
 
-        private static AddRelicCommand MakeCommand(string name = "Lith A1 Intact", string type = "lith", string code = "A1") =>
+        private static AddRelicCommand MakeCommand(string name = "Lith A1", RelicType type = RelicType.LITH, string code = "A1") =>
             new() { Name = name, Type = type, Code = code };
 
         // ── CreateRelic ──────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ namespace ItemsStore.Tests.Services
         [Fact]
         public async Task GetAllRelics_ReturnsMappedList()
         {
-            var entities = new List<RelicEntity> { MakeEntity(), MakeEntity("Meso B1 Intact", RelicType.MESO, "B1") };
+            var entities = new List<RelicEntity> { MakeEntity(), MakeEntity("Meso B1", RelicType.MESO, "B1") };
             _repoMock.Setup(r => r.GetAllRelics()).ReturnsAsync(entities);
 
             var result = await _service.GetAllRelics();
@@ -111,8 +111,8 @@ namespace ItemsStore.Tests.Services
         {
             var entities = new List<RelicEntity>
             {
-                MakeEntity("Lith A1 Intact", RelicType.LITH, "A1"),
-                MakeEntity("Meso B1 Intact", RelicType.MESO, "B1"),
+                MakeEntity("Lith A1", RelicType.LITH, "A1"),
+                MakeEntity("Meso B1", RelicType.MESO, "B1"),
             };
             _repoMock.Setup(r => r.GetAllRelics()).ReturnsAsync(entities);
 
@@ -135,7 +135,7 @@ namespace ItemsStore.Tests.Services
         [Fact]
         public async Task GetRelicsByType_WhenNoMatch_ReturnsEmptyList()
         {
-            var entities = new List<RelicEntity> { MakeEntity("Meso B1 Intact", RelicType.MESO, "B1") };
+            var entities = new List<RelicEntity> { MakeEntity("Meso B1", RelicType.MESO, "B1") };
             _repoMock.Setup(r => r.GetAllRelics()).ReturnsAsync(entities);
 
             var result = await _service.GetRelicsByType(RelicType.LITH);
@@ -150,8 +150,8 @@ namespace ItemsStore.Tests.Services
         {
             var entities = new List<RelicEntity>
             {
-                MakeEntity("Lith A1 Intact", RelicType.LITH, "A1"),
-                MakeEntity("Meso B1 Intact", RelicType.MESO, "B1"),
+                MakeEntity("Lith A1", RelicType.LITH, "A1"),
+                MakeEntity("Meso B1", RelicType.MESO, "B1"),
             };
             _repoMock.Setup(r => r.GetAllRelics()).ReturnsAsync(entities);
 
@@ -198,8 +198,8 @@ namespace ItemsStore.Tests.Services
         [Fact]
         public async Task UpdateRelic_WhenExists_ReturnsMappedRelic()
         {
-            var command = MakeCommand("Lith A1 Intact", "neo", "A2");
-            var updated = MakeEntity("Lith A1 Intact", RelicType.NEO, "A2");
+            var command = MakeCommand("Neo A2", RelicType.NEO, "A2");
+            var updated = MakeEntity("Neo A2", RelicType.NEO, "A2");
 
             _repoMock.Setup(r => r.GetRelic(command.Name)).ReturnsAsync(MakeEntity());
             _repoMock.Setup(r => r.UpdateRelic(command)).ReturnsAsync(updated);
@@ -211,11 +211,12 @@ namespace ItemsStore.Tests.Services
         }
 
         [Fact]
-        public async Task UpdateRelic_WhenNotFound_ThrowsKeyNotFoundException()
+        public async Task UpdateRelic_WhenNotFound_ThrowsInvalidOperationException()
         {
+            var command = MakeCommand();
             _repoMock.Setup(r => r.GetRelic(It.IsAny<string>())).ReturnsAsync((RelicEntity?)null);
 
-            await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.UpdateRelic(MakeCommand()));
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.UpdateRelic(command));
         }
     }
 }

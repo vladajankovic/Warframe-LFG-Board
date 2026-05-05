@@ -1,4 +1,6 @@
-﻿using ItemsStore.Database.Entity;
+﻿using ItemsStore.Commands;
+using ItemsStore.Database.Entity;
+using ItemsStore.Utility.Mappers;
 
 namespace ItemsStore.Utility
 {
@@ -28,6 +30,19 @@ namespace ItemsStore.Utility
         {
             var split = relicName.Split();
             return split.Length > 1 ? split.ElementAt(1) : string.Empty;
+        }
+
+        public static bool IsRelicValid(AddRelicCommand command)
+        {
+            var list = command.Name.ToLower().Split();
+            if (list.Length != 2) return false;
+
+            var type = ExtractRelicType(command.Name);
+            if (type == RelicType.UNKNOWN) return false;
+
+            if (type != command.Type) return false;
+
+            return $"{type.ToString()} {command.Code}".ToSnakeCase() == command.Name.ToSnakeCase();
         }
     }
 }

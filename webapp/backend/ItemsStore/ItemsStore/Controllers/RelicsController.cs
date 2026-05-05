@@ -2,7 +2,6 @@
 using ItemsStore.Utility;
 using ItemsStore.Commands;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -13,11 +12,14 @@ namespace ItemsStore.Controllers
     public class RelicsController : ControllerBase
     {
         private readonly IRelicService _relicService;
+        private readonly ILogger<RelicsController> _logger;
         public RelicsController(
-            IRelicService relicService
+            IRelicService relicService,
+            ILogger<RelicsController> logger
         )
         {
             _relicService = relicService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -27,16 +29,14 @@ namespace ItemsStore.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        [Route("relic/{relicName}")]
+        [HttpGet("relic/{relicName}")]
         public async Task<IActionResult> GetRelic([FromRoute] string relicName)
         {
             var result = await _relicService.GetRelic(relicName);
             return result != null ? Ok(result) : NotFound();
         }
 
-        [HttpGet]
-        [Route("type/{relicType}")]
+        [HttpGet("type/{relicType}")]
         public async Task<IActionResult> GetRelicsByType([FromRoute] string relicType)
         {
             var type = RelicUtils.GetRelicTypeEnum(relicType.ToLower());
@@ -44,8 +44,7 @@ namespace ItemsStore.Controllers
             return result != null && result.Count > 0 ? Ok(result) : NotFound();
         }
 
-        [HttpGet]
-        [Route("code/{relicCode}")]
+        [HttpGet("code/{relicCode}")]
         public async Task<IActionResult> GetRelicsByCode([FromRoute] string relicCode)
         {
             relicCode = relicCode.ToUpper();
@@ -53,12 +52,25 @@ namespace ItemsStore.Controllers
             return result != null && result.Count > 0 ? Ok(result) : NotFound();
         }
 
-        [Authorize]
+        //[Authorize]
         [HttpPost]
         public async Task<IActionResult> AddNewRelic([FromBody] AddRelicCommand command)
         {
-            var created = await _relicService.CreateRelic(command);
-            return StatusCode((int)HttpStatusCode.Created, created);
+            try
+            {
+                var created = await _relicService.CreateRelic(command);
+                return StatusCode((int)HttpStatusCode.Created, created);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Unable to add new relic {command.Name}!");
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to add new relic {command.Name}!");
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize]
@@ -73,8 +85,21 @@ namespace ItemsStore.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateRelic([FromBody] AddRelicCommand command)
         {
-            var updated = await _relicService.UpdateRelic(command);
-            return updated != null ? Ok(updated) : NotFound();
+            try
+            {
+                var updated = await _relicService.UpdateRelic(command);
+                return Ok(updated);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Unable to update relic {command.Name}!");
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to update relic {command.Name}!");
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

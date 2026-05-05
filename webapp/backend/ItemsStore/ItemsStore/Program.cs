@@ -1,10 +1,13 @@
 
+using FluentValidation;
+using ItemsStore.Commands;
 using ItemsStore.Database;
 using ItemsStore.Repository;
 using ItemsStore.Seed;
 using ItemsStore.Services;
 using ItemsStore.Utility;
 using ItemsStore.Utility.Mappers;
+using ItemsStore.Validators;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
@@ -28,6 +31,9 @@ namespace ItemsStore
 
             builder.Services.AddScoped<IRelicService, RelicService>();
             builder.Services.AddScoped<IResourceService, ResourceService>();
+
+            builder.Services.AddTransient<IValidator<AddRelicCommand>, AddRelicCommandValidator>();
+            builder.Services.AddTransient<IValidator<AddResourceCommand>, AddResourceCommandValidator>();
 
             builder.Services.AddHttpClient<WarframeApiUtils>();
             builder.Services.AddScoped<DbSeed>();

@@ -3,6 +3,8 @@ using ItemsStore.Commands;
 using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Repository;
+using ItemsStore.Utility;
+using ItemsStore.Utility.Mappers;
 
 namespace ItemsStore.Services
 {
@@ -22,6 +24,13 @@ namespace ItemsStore.Services
 
         public async Task<Relic> CreateRelic(AddRelicCommand command)
         {
+            var valid = RelicUtils.IsRelicValid(command);
+
+            if (!valid)
+            {
+                throw new InvalidOperationException($"Relic is not valid!");
+            }
+
             var relic = await _repository.GetRelic(command.Name);
             
             if (relic != null)
@@ -81,6 +90,13 @@ namespace ItemsStore.Services
 
         public async Task<Relic> UpdateRelic(AddRelicCommand command)
         {
+            var valid = RelicUtils.IsRelicValid(command);
+
+            if (!valid)
+            {
+                throw new InvalidOperationException($"Relic is not valid!");
+            }
+
             var relic = await _repository.GetRelic(command.Name);
 
             if (relic == null)
