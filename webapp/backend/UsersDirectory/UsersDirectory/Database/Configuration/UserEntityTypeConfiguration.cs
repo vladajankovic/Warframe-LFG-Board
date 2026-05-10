@@ -18,6 +18,10 @@ namespace UsersDirectory.Database.Configuration
                 .HasMaxLength(254);
             builder.Property(x => x.Password)
                 .IsRequired();
+            builder.Property(x => x.Role)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("User");
         }
     }
 }

@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using UsersDirectory.Commands;
 using UsersDirectory.Models;
 using UsersDirectory.Repositories;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace UsersDirectory.Services
 {
@@ -12,16 +15,21 @@ namespace UsersDirectory.Services
         private readonly IUsersRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<AddUserCommand> _passwordHasher;
+        private readonly IConfiguration _configuration;
+
         public UserService(
             IUsersRepository usersRepository,
             IMapper mapper,
-            IPasswordHasher<AddUserCommand> passwordHasher
+            IPasswordHasher<AddUserCommand> passwordHasher,
+            IConfiguration configuration
         )
         {
             _userRepository = usersRepository;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
+            _configuration = configuration;
         }
+
         public async Task<User> CreateUser(AddUserCommand command)
         {
             var userEntity = await _userRepository.GetUser(command.Email);
@@ -52,7 +60,7 @@ namespace UsersDirectory.Services
         public async Task<User> GetUser(string email)
         {
             var userEntity = await _userRepository.GetUser(email);
-            
+
             if (userEntity == null)
             {
                 return null;
@@ -77,7 +85,7 @@ namespace UsersDirectory.Services
             return _mapper.Map<User>(updatedUser);
         }
 
-        public async Task<bool> LoginUser(AddUserCommand user)
+        public async Task<LoginResponse> LoginUser(AddUserCommand user)
         {
             var foundUser = await _userRepository.GetUser(user.Email);
 
@@ -87,7 +95,43 @@ namespace UsersDirectory.Services
             }
 
             var result = _passwordHasher.VerifyHashedPassword(user, foundUser.Password, user.Password);
-            return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
+            if (result != PasswordVerificationResult.Success && result != PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                throw new UnauthorizedAccessException("Invalid credentials.");
+            }
+
+            var token = GenerateJwtToken(foundUser.Email, foundUser.Role);
+
+            return new LoginResponse
+            {
+                Token = token,
+                Email = foundUser.Email,
+                Role = foundUser.Role,
+            };
+        }
+
+        private string GenerateJwtToken(string email, string role)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(ClaimTypes.Role, role),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(8),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

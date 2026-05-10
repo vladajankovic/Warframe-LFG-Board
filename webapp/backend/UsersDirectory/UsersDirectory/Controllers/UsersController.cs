@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Security.Claims;
 using UsersDirectory.Commands;
 using UsersDirectory.Services;
 
@@ -22,7 +23,7 @@ namespace UsersDirectory.Controllers
         }
 
         [HttpGet("users")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsers()
         {
             var result = await _userService.GetAllUsers();
@@ -30,7 +31,7 @@ namespace UsersDirectory.Controllers
         }
 
         [HttpGet("user")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUser([FromQuery] string email)
         {
             var result = await _userService.GetUser(email);
@@ -62,10 +63,14 @@ namespace UsersDirectory.Controllers
         {
             try
             {
-                bool result = await _userService.LoginUser(command);
-                return result ? Ok() : Unauthorized("Invalid credentials.");
+                var result = await _userService.LoginUser(command);
+                return Ok(result);
             }
             catch (KeyNotFoundException)
+            {
+                return Unauthorized("Invalid credentials.");
+            }
+            catch (UnauthorizedAccessException)
             {
                 return Unauthorized("Invalid credentials.");
             }
@@ -77,7 +82,7 @@ namespace UsersDirectory.Controllers
         }
 
         [HttpDelete("user")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser([FromQuery] string email)
         {
             bool result = await _userService.DeleteUser(email);
@@ -88,6 +93,14 @@ namespace UsersDirectory.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateUser([FromBody] AddUserCommand command)
         {
+            var callerEmail = User.FindFirstValue(ClaimTypes.Email);
+            var isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && callerEmail != command.Email)
+            {
+                return Forbid();
+            }
+
             try
             {
                 var result = await _userService.UpdateUser(command);

@@ -35,7 +35,7 @@ namespace ItemsStore.Controllers
             return resource != null ? Ok(resource) : NotFound();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddNewResource([FromBody] AddResourceCommand command)
         {
@@ -56,7 +56,7 @@ namespace ItemsStore.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("resource/{resourceName}")]
         public async Task<IActionResult> DeleteResource([FromRoute] string resourceName)
         {
@@ -64,7 +64,7 @@ namespace ItemsStore.Controllers
             return deleted ? NoContent() : NotFound();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateResource([FromBody] AddResourceCommand command)
         {

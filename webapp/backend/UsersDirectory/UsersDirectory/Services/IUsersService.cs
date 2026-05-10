@@ -10,6 +10,6 @@ namespace UsersDirectory.Services
         public Task<User> GetUser(string email);
         public Task<User> UpdateUser(AddUserCommand command);
         public Task<bool> DeleteUser(string email);
-        public Task<bool> LoginUser(AddUserCommand command);
+        public Task<LoginResponse> LoginUser(AddUserCommand command);
     }
 }

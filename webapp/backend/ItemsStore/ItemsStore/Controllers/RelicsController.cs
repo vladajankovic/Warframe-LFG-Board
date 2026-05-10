@@ -52,7 +52,7 @@ namespace ItemsStore.Controllers
             return result != null && result.Count > 0 ? Ok(result) : NotFound();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddNewRelic([FromBody] AddRelicCommand command)
         {
@@ -73,7 +73,7 @@ namespace ItemsStore.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("relic/{relicName}")]
         public async Task<IActionResult> DeleteRelic([FromRoute] string relicName)
         {
@@ -81,7 +81,7 @@ namespace ItemsStore.Controllers
             return deleted ? NoContent() : NotFound();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         public async Task<IActionResult> UpdateRelic([FromBody] AddRelicCommand command)
         {

@@ -35,6 +35,13 @@ namespace UsersDirectory.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("User");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")

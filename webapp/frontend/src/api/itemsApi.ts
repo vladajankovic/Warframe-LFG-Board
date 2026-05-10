@@ -1,3 +1,5 @@
+import { getAuthToken } from './usersApi'
+
 export interface Relic {
   id: number
   name: string
@@ -15,6 +17,11 @@ export interface Resource {
 }
 
 const BASE_URL = '/v1/itemstore'
+
+export function authHeaders(): HeadersInit {
+  const token = getAuthToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
 
 export async function fetchRelics(): Promise<Relic[]> {
   const res = await fetch(`${BASE_URL}/relics`)
