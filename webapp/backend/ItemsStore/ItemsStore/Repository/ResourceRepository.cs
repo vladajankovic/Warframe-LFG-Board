@@ -1,7 +1,7 @@
 ﻿using ItemsStore.Commands;
 using ItemsStore.Database;
 using ItemsStore.Database.Entity;
-using ItemsStore.Utility.Mappers;
+using ItemsStore.Utility;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Repository

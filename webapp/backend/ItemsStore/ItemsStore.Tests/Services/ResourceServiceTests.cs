@@ -1,9 +1,9 @@
 using AutoMapper;
 using ItemsStore.Commands;
 using ItemsStore.Database.Entity;
-using ItemsStore.Models;
 using ItemsStore.Repository;
 using ItemsStore.Services;
+using ItemsStore.Utility;
 using ItemsStore.Utility.Mappers;
 using Moq;
 using Xunit;

@@ -21,6 +21,12 @@ namespace ItemsStore.Database.Configuration
                 .HasMaxLength(128);
             builder.Property(x => x.Description)
                 .HasMaxLength(512);
+            builder.Property(x => x.Category)
+                .HasMaxLength(64);
+            builder.Property(x => x.WikiCategory)
+                .HasMaxLength(128);
+            builder.Property(x => x.Group)
+                .HasMaxLength(128);
         }
     }
 }

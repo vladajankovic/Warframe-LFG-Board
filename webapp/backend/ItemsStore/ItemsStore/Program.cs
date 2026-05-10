@@ -50,7 +50,6 @@ namespace ItemsStore
                 var dbContext = scope.ServiceProvider.GetRequiredService<ItemsDbContext>();
                 dbContext.Database.Migrate();
 
-                // Seed relics from Warframe API
                 var dbSeed = scope.ServiceProvider.GetRequiredService<DbSeed>();
                 await dbSeed.SeedRelics();
                 await dbSeed.SeedResources();

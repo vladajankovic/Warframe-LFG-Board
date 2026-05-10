@@ -1,4 +1,4 @@
-﻿namespace ItemsStore.Utility.Mappers
+﻿namespace ItemsStore.Utility
 {
     public static class StringUtils
     {

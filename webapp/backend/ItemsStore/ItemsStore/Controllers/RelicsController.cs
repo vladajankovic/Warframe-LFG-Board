@@ -52,7 +52,7 @@ namespace ItemsStore.Controllers
             return result != null && result.Count > 0 ? Ok(result) : NotFound();
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddNewRelic([FromBody] AddRelicCommand command)
         {

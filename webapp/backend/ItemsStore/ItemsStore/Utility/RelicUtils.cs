@@ -1,6 +1,5 @@
 ﻿using ItemsStore.Commands;
 using ItemsStore.Database.Entity;
-using ItemsStore.Utility.Mappers;
 
 namespace ItemsStore.Utility
 {

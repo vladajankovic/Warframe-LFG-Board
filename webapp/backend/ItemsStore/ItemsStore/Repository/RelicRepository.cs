@@ -4,7 +4,6 @@ using ItemsStore.Database;
 using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Utility;
-using ItemsStore.Utility.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Repository

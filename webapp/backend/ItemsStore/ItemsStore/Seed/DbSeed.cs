@@ -1,8 +1,6 @@
 ﻿using ItemsStore.Database;
 using ItemsStore.Database.Entity;
-using ItemsStore.Models;
 using ItemsStore.Utility;
-using ItemsStore.Utility.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace ItemsStore.Seed
@@ -105,22 +103,27 @@ namespace ItemsStore.Seed
                     return;
                 }
 
-                _logger.LogInformation("Fetching resources from Warframe API...");
-                var resourceItems = await _warframeApiUtils.GetAllResources();
+                _logger.LogInformation("Fetching resources from Warframe wiki…");
+                var resourceItems = await _warframeApiUtils.GetAllResourcesFromWiki();
 
                 if (resourceItems == null || resourceItems.Count == 0)
                 {
-                    _logger.LogWarning("No resources returned from API.");
+                    _logger.LogWarning("No resources returned from wiki.");
                     return;
                 }
 
-                _logger.LogInformation("Retrieved {Count} resources from API. Processing...", resourceItems.Count);
+                _logger.LogInformation("Retrieved {Count} resources from wiki. Processing...", resourceItems.Count);
+
+                var allItems = await _warframeApiUtils.GetAllItems();
 
                 var resourcesToAdd = resourceItems.Select(item => new ResourceEntity
                 {
                     Name = item.Name,
+                    Description = allItems.Where(x => x.Name == item.Name).Select(x => x.Description).FirstOrDefault()?.Split('\n')[0],
                     ResourceName = item.Name.ToSnakeCase(),
-                    Description = item.Description
+                    Category = item.Category,
+                    WikiCategory = item.WikiCategory,
+                    Group = item.Group
                 }).ToList();
 
                 await _dbContext.Resources.AddRangeAsync(resourcesToAdd);
