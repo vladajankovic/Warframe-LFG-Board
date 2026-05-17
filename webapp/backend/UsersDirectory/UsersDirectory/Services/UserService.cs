@@ -14,13 +14,13 @@ namespace UsersDirectory.Services
     {
         private readonly IUsersRepository _userRepository;
         private readonly IMapper _mapper;
-        private readonly IPasswordHasher<AddUserCommand> _passwordHasher;
+        private readonly IPasswordHasher<string> _passwordHasher;
         private readonly IConfiguration _configuration;
 
         public UserService(
             IUsersRepository usersRepository,
             IMapper mapper,
-            IPasswordHasher<AddUserCommand> passwordHasher,
+            IPasswordHasher<string> passwordHasher,
             IConfiguration configuration
         )
         {
@@ -39,16 +39,16 @@ namespace UsersDirectory.Services
                 throw new InvalidOperationException($"User '{command.Email}' already exists");
             }
 
-            command.Password = _passwordHasher.HashPassword(command, command.Password);
+            command.Password = _passwordHasher.HashPassword(string.Empty, command.Password);
 
             var newUser = await _userRepository.CreateUser(command);
 
             return _mapper.Map<User>(newUser);
         }
 
-        public Task<bool> DeleteUser(string email)
+        public async Task<bool> DeleteUser(string email)
         {
-            return _userRepository.DeleteUser(email);
+            return await _userRepository.DeleteUser(email);
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -69,7 +69,7 @@ namespace UsersDirectory.Services
             return _mapper.Map<User>(userEntity);
         }
 
-        public async Task<User> UpdateUser(AddUserCommand command)
+        public async Task<User> UpdateUser(UpdateUserCommand command)
         {
             var userEntity = await _userRepository.GetUser(command.Email);
 
@@ -78,7 +78,10 @@ namespace UsersDirectory.Services
                 throw new KeyNotFoundException($"User '{command.Email}' not found");
             }
 
-            command.Password = _passwordHasher.HashPassword(command, command.Password);
+            if (command.Password != null)
+            {
+                command.Password = _passwordHasher.HashPassword(string.Empty, command.Password);
+            }
 
             var updatedUser = await _userRepository.UpdateUser(command);
 
@@ -94,7 +97,8 @@ namespace UsersDirectory.Services
                 throw new KeyNotFoundException($"User '{user.Email}' not found");
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(user, foundUser.Password, user.Password);
+            var result = _passwordHasher.VerifyHashedPassword(string.Empty, foundUser.Password, user.Password);
+
             if (result != PasswordVerificationResult.Success && result != PasswordVerificationResult.SuccessRehashNeeded)
             {
                 throw new UnauthorizedAccessException("Invalid credentials.");
@@ -108,6 +112,74 @@ namespace UsersDirectory.Services
                 Email = foundUser.Email,
                 Role = foundUser.Role,
             };
+        }
+
+        public async Task<bool> IsUserVerified(string email)
+        {
+            var foundUser = await _userRepository.GetUser(email);
+
+            if (foundUser == null)
+            {
+                return false;
+            }
+
+            return foundUser.IsVerified;
+        }
+
+        public async Task<User> ChangePassword(ChangePasswordCommand user)
+        {
+            var foundUser = await _userRepository.GetUser(user.Email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{user.Email}' not found");
+            }
+
+
+            var result = _passwordHasher.VerifyHashedPassword(string.Empty, foundUser.Password, user.OldPassword);
+
+            if (result != PasswordVerificationResult.Success && result != PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                throw new InvalidOperationException("Incorect value of old password.");
+            }
+
+            if (user.OldPassword == user.NewPassword)
+            {
+                throw new InvalidOperationException("New password must be different from the old password.");
+            }
+
+            user.NewPassword = _passwordHasher.HashPassword(string.Empty, user.NewPassword);
+
+            var updatedUser = await _userRepository.UpdateUser(
+                new UpdateUserCommand
+                {
+                    Email = user.Email,
+                    Password = user.NewPassword,
+                    Role = foundUser.Role,
+                    IsVerified = foundUser.IsVerified
+                }
+            );
+
+            return _mapper.Map<User>(updatedUser);
+        }
+
+        public async Task<bool> DeleteAccount(AddUserCommand user)
+        {
+            var foundUser = await _userRepository.GetUser(user.Email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{user.Email}' not found");
+            }
+
+            var result = _passwordHasher.VerifyHashedPassword(string.Empty, foundUser.Password, user.Password);
+
+            if (result != PasswordVerificationResult.Success && result != PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                throw new UnauthorizedAccessException("Invalid credentials.");
+            }
+
+            return await _userRepository.DeleteUser(user.Email);
         }
 
         private string GenerateJwtToken(string email, string role)

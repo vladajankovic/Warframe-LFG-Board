@@ -8,8 +8,11 @@ namespace UsersDirectory.Services
         public Task<User> CreateUser(AddUserCommand command);
         public Task<List<User>> GetAllUsers();
         public Task<User> GetUser(string email);
-        public Task<User> UpdateUser(AddUserCommand command);
         public Task<bool> DeleteUser(string email);
         public Task<LoginResponse> LoginUser(AddUserCommand command);
+        public Task<bool> IsUserVerified(string email);
+        public Task<User> UpdateUser(UpdateUserCommand command);
+        public Task<User> ChangePassword(ChangePasswordCommand command);
+        public Task<bool> DeleteAccount(AddUserCommand command);
     }
 }

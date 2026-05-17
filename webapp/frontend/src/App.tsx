@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import NavBar from './components/NavBar'
 import HomePage from './pages/HomePage'
 import RelicsPage from './pages/RelicsPage'
@@ -10,6 +10,16 @@ import AdminPage from './pages/AdminPage'
 import AdminLayout from './pages/AdminLayout'
 import RelicsAdminPage from './pages/RelicsAdminPage'
 import ResourcesAdminPage from './pages/ResourcesAdminPage'
+import UsersAdminPage from './pages/UsersAdminPage'
+import SettingsPage from './pages/SettingsPage'
+
+function RequireAuth({ role }: { role?: string }) {
+  const token = localStorage.getItem('auth_token')
+  const userRole = localStorage.getItem('user_role')
+  if (!token) return <Navigate to="/" replace />
+  if (role && userRole !== role) return <Navigate to="/" replace />
+  return <Outlet />
+}
 
 function Layout() {
   return (
@@ -48,10 +58,16 @@ export default function App() {
           <Route path="/relics/:name" element={<RelicDetailPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/resources/:name" element={<ResourceDetailPage />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminPage />} />
-            <Route path="relics" element={<RelicsAdminPage />} />
-            <Route path="resources" element={<ResourcesAdminPage />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+          <Route element={<RequireAuth role="Admin" />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminPage />} />
+              <Route path="relics" element={<RelicsAdminPage />} />
+              <Route path="resources" element={<ResourcesAdminPage />} />
+              <Route path="users" element={<UsersAdminPage />} />
+            </Route>
           </Route>
         </Route>
       </Routes>

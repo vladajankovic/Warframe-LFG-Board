@@ -1,0 +1,196 @@
+import { useState, useEffect, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  fetchAllUsers,
+  updateUser,
+  deleteUser,
+  type User,
+  type UpdateUserPayload,
+} from '../api/usersApi'
+import { AdminTable, type ColumnDef } from '../components/AdminTable'
+import { DeleteModal } from '../components/DeleteModal'
+
+const ROLES = ['User', 'Admin']
+
+// ── Edit modal ────────────────────────────────────────────────────────────────
+
+interface UserModalProps {
+  initial: User
+  onClose: () => void
+  onSaved: () => void
+}
+
+function UserModal({ initial, onClose, onSaved }: UserModalProps) {
+  const [role, setRole] = useState(initial.role)
+  const [isVerified, setIsVerified] = useState(initial.isVerified)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSaving(true)
+    const payload: UpdateUserPayload = {
+      email: initial.email,
+      role,
+      isVerified,
+      ...(password ? { password } : {}),
+    }
+    try {
+      await updateUser(payload)
+      onSaved()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-card" onClick={e => e.stopPropagation()}>
+        <h2 className="modal-title">Edit User</h2>
+        {error && <p className="modal-error">{error}</p>}
+        <form className="modal-form" onSubmit={handleSubmit}>
+          <label className="modal-label">
+            Email
+            <input className="modal-input" value={initial.email} disabled />
+          </label>
+          <label className="modal-label">
+            Role
+            <select
+              className="modal-input"
+              value={role}
+              onChange={e => setRole(e.target.value)}
+            >
+              {ROLES.map(r => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </label>
+          <label className="modal-label modal-label--inline">
+            <input
+              type="checkbox"
+              checked={isVerified}
+              onChange={e => setIsVerified(e.target.checked)}
+              disabled={initial.isVerified}
+            />
+            Verified
+          </label>
+          <label className="modal-label">
+            New Password
+            <span className="modal-label__hint"> (leave blank to keep current)</span>
+            <input
+              className="modal-input"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </label>
+          <div className="modal-actions">
+            <button type="button" className="modal-btn modal-btn--cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="modal-btn modal-btn--save" disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
+
+const COLUMNS: ColumnDef<User>[] = [
+  { header: 'Email', cell: u => u.email, sortKey: u => u.email },
+  { header: 'Role', cell: u => u.role, sortKey: u => u.role },
+  {
+    header: 'Verified',
+    cell: u => (
+      <span style={{ color: u.isVerified ? 'var(--accent)' : 'var(--danger)' }}>
+        {u.isVerified ? '✓' : '✗'}
+      </span>
+    ),
+    sortKey: u => (u.isVerified ? 1 : 0),
+  },
+  {
+    header: 'Created',
+    cell: u => new Date(u.createdAt).toLocaleDateString(),
+    sortKey: u => u.createdAt,
+  },
+]
+
+export default function UsersAdminPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [editTarget, setEditTarget] = useState<User | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const data = await fetchAllUsers()
+      setUsers(data)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const filtered = users.filter(u =>
+    u.email.toLowerCase().includes(search.toLowerCase()) ||
+    u.role.toLowerCase().includes(search.toLowerCase())
+  )
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    await deleteUser(deleteTarget.email)
+    setDeleteTarget(null)
+    load()
+  }
+
+  return (
+    <div className="admin-subpage">
+      <div className="admin-subpage__header">
+        <Link to="/admin" className="admin-subpage__back">← Admin Panel</Link>
+        <h1 className="admin-subpage__title">Users</h1>
+      </div>
+
+      <AdminTable
+        columns={COLUMNS}
+        rows={filtered}
+        loading={loading}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by email or role…"
+        getRowKey={u => u.email}
+        emptyMessage="No users found."
+        onEdit={u => setEditTarget(u)}
+        onDelete={u => setDeleteTarget(u)}
+      />
+
+      {editTarget && (
+        <UserModal
+          initial={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={() => { setEditTarget(null); load() }}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteModal
+          itemName={deleteTarget.email}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
+      )}
+    </div>
+  )
+}

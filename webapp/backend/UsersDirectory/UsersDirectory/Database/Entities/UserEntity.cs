@@ -9,5 +9,13 @@
         public string Password { get; set; }
 
         public string Role { get; set; } = "User";
+
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime LastUpdatedAt { get; set; }
+
+        public string VerificationCode { get; set; }
+
+        public bool IsVerified { get; set; } = false;
     }
 }

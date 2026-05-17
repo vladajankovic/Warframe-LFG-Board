@@ -90,17 +90,9 @@ namespace UsersDirectory.Controllers
         }
 
         [HttpPatch("user")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUser([FromBody] AddUserCommand command)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserCommand command)
         {
-            var callerEmail = User.FindFirstValue(ClaimTypes.Email);
-            var isAdmin = User.IsInRole("Admin");
-
-            if (!isAdmin && callerEmail != command.Email)
-            {
-                return Forbid();
-            }
-
             try
             {
                 var result = await _userService.UpdateUser(command);
@@ -114,6 +106,72 @@ namespace UsersDirectory.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to update user {command.Email}!");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("user/me/update")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            if (email != command.Email)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var result = await _userService.ChangePassword(command);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to update user {command.Email}!");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("user/me/delete")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount([FromBody] AddUserCommand command)
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            if (email != command.Email)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                bool result = await _userService.DeleteAccount(command);
+                return result ? Ok() : NotFound();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return Unauthorized(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to delete account {command.Email}!");
                 return BadRequest(ex.Message);
             }
         }

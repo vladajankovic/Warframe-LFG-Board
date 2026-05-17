@@ -23,7 +23,7 @@ const MENU_ITEMS = [
     description: 'Manage user accounts and roles.',
     icon: '◉',
     path: '/admin/users',
-    available: false,
+    available: true,
   },
   {
     id: 'logs',

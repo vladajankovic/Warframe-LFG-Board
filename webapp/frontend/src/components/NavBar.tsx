@@ -4,13 +4,12 @@ import { Link, useNavigate } from 'react-router-dom'
 export default function NavBar() {
   const [email, setEmail] = useState<string | null>(() => localStorage.getItem('user_email'))
   const [role, setRole] = useState<string | null>(() => localStorage.getItem('user_role'))
+  const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
     function onStorage(e: StorageEvent) {
-      if (e.key === 'user_email') {
-        setEmail(e.newValue)
-      }
+      if (e.key === 'user_email') setEmail(e.newValue)
     }
     function onAuthChanged() {
       setEmail(localStorage.getItem('user_email'))
@@ -30,25 +29,57 @@ export default function NavBar() {
     localStorage.removeItem('user_role')
     setEmail(null)
     setRole(null)
+    setOpen(false)
     window.dispatchEvent(new Event('user_auth_changed'))
     navigate('/')
   }
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar__brand">Warframe Items</Link>
+      <Link to="/" className="navbar__brand">
+        <img src="/images/lfg-logo1.png" alt="Warframe LFG Logo" className="navbar__logo" />
+      </Link>
 
       <div className="navbar__right">
         {email ? (
-          <>
-            {role === 'Admin' && (
-              <Link to="/admin" className="navbar__admin-link">Admin Panel</Link>
+          <div
+            className="navbar__user-menu"
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+          >
+            <span className="navbar__user-trigger">
+              {email}
+              <span className="navbar__user-caret">▾</span>
+            </span>
+
+            {open && (
+              <div className="navbar__dropdown">
+                <Link
+                  to="/settings"
+                  className="navbar__dropdown-item"
+                  onClick={() => setOpen(false)}
+                >
+                  ⚙ Settings
+                </Link>
+                {role === 'Admin' && (
+                  <Link
+                    to="/admin"
+                    className="navbar__dropdown-item"
+                    onClick={() => setOpen(false)}
+                  >
+                    ◈ Admin Panel
+                  </Link>
+                )}
+                <button
+                  className="navbar__dropdown-item navbar__dropdown-item--danger"
+                  onClick={handleLogout}
+                  type="button"
+                >
+                  ⏻ Logout
+                </button>
+              </div>
             )}
-            <span className="navbar__user">{email}</span>
-            <button className="navbar__logout" onClick={handleLogout} type="button">
-              Logout
-            </button>
-          </>
+          </div>
         ) : (
           <Link to="/login" className="navbar__login-btn">
             Login / Register

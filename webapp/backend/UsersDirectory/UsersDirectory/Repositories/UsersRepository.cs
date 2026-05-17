@@ -19,7 +19,10 @@ namespace UsersDirectory.Repositories
             var userEntity = new UserEntity()
             {
                 Email = command.Email,
-                Password = command.Password
+                Password = command.Password,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
+                VerificationCode = Guid.NewGuid().ToString("N")
             };
 
             await _dbContext.AddAsync(userEntity);
@@ -55,11 +58,19 @@ namespace UsersDirectory.Repositories
             return await _dbContext.Users.Where(x => x.Email == email).FirstOrDefaultAsync();
         }
 
-        public async Task<UserEntity> UpdateUser(AddUserCommand command)
+        public async Task<UserEntity> UpdateUser(UpdateUserCommand command)
         {
             var userEntity = await GetUser(command.Email);
 
             userEntity.Password = command.Password;
+
+            if (userEntity.Role != "Admin")
+            {
+                userEntity.Role = command.Role;
+            }
+            userEntity.IsVerified = command.IsVerified;
+
+            userEntity.LastUpdatedAt = DateTime.UtcNow;
 
             await _dbContext.SaveChangesAsync();
 

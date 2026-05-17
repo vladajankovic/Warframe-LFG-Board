@@ -3,18 +3,24 @@ import { useState } from 'react'
 interface DeleteModalProps {
   itemName: string
   onClose: () => void
-  onConfirm: () => Promise<void>
+  onConfirm: (password?: string) => Promise<void>
+  requirePassword?: boolean
 }
 
-export function DeleteModal({ itemName, onClose, onConfirm }: DeleteModalProps) {
+export function DeleteModal({ itemName, onClose, onConfirm, requirePassword }: DeleteModalProps) {
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [password, setPassword] = useState('')
 
   async function handleConfirm() {
+    if (requirePassword && !password) {
+      setError('Please enter your password to confirm.')
+      return
+    }
     setDeleting(true)
     setError(null)
     try {
-      await onConfirm()
+      await onConfirm(requirePassword ? password : undefined)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Delete failed.')
       setDeleting(false)
@@ -26,6 +32,19 @@ export function DeleteModal({ itemName, onClose, onConfirm }: DeleteModalProps) 
       <div className="modal-card modal-card--sm" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">Delete "{itemName}"?</h2>
         <p className="modal-body-text">This action cannot be undone.</p>
+        {requirePassword && (
+          <label className="settings-label" style={{ marginTop: '0.75rem' }}>
+            Confirm your password
+            <input
+              className="settings-input"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </label>
+        )}
         {error && <p className="modal-error">{error}</p>}
         <div className="modal-actions">
           <button type="button" className="modal-btn modal-btn--cancel" onClick={onClose}>

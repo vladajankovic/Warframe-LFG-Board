@@ -8,7 +8,7 @@ namespace UsersDirectory.Repositories
         public Task<UserEntity> CreateUser(AddUserCommand command);
         public Task<List<UserEntity>> GetAllUsers();
         public Task<UserEntity> GetUser(string email);
-        public Task<UserEntity> UpdateUser(AddUserCommand command);
+        public Task<UserEntity> UpdateUser(UpdateUserCommand command);
         public Task<bool> DeleteUser(string email);
     }
 }

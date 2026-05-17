@@ -25,6 +25,22 @@ function RelicFan() {
   )
 }
 
+const RESOURCE_FADE_IMAGES = [
+  '/images/resources/OrokinCell.png',
+  '/images/resources/Credits.png',
+  '/images/resources/Endo.png',
+]
+
+function ResourceFade() {
+  return (
+    <div className="resource-fade">
+      {RESOURCE_FADE_IMAGES.map((src) => (
+        <img key={src} className="resource-fade__img" src={src} alt="" />
+      ))}
+    </div>
+  )
+}
+
 const CATEGORIES = [
   {
     id: 'relics',
@@ -149,7 +165,7 @@ export default function HomePage() {
             description={cat.description}
             icon={cat.icon}
             onClick={() => navigate(cat.path)}
-            iconContent={cat.id === 'relics' ? <RelicFan /> : undefined}
+            iconContent={cat.id === 'relics' ? <RelicFan /> : cat.id === 'resources' ? <ResourceFade /> : undefined}
           />
         ))}
       </main>

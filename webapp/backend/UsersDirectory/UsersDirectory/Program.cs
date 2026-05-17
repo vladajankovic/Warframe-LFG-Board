@@ -32,9 +32,11 @@ namespace UsersDirectory
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
             builder.Services.AddScoped<IUsersService, UserService>();
-            builder.Services.AddScoped<IPasswordHasher<AddUserCommand>, PasswordHasher<AddUserCommand>>();
+            builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
 
             builder.Services.AddTransient<IValidator<AddUserCommand>, AddUserCommandValidator>();
+            builder.Services.AddTransient<IValidator<UpdateUserCommand>, UpdateUserCommandValidator>();
+            builder.Services.AddTransient<IValidator<ChangePasswordCommand>, ChangePasswordCommandValidator>();
 
             builder.Services.AddScoped<DbSeed>();
 
@@ -76,6 +78,11 @@ namespace UsersDirectory
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+            }
+
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();

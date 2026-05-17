@@ -16,7 +16,7 @@ interface AdminTableProps<T> {
   search: string
   onSearchChange: (v: string) => void
   searchPlaceholder?: string
-  onAdd: () => void
+  onAdd?: () => void
   addLabel?: string
   onEdit: (row: T) => void
   onDelete: (row: T) => void
@@ -71,9 +71,11 @@ export function AdminTable<T extends object>({
           value={search}
           onChange={e => onSearchChange(e.target.value)}
         />
-        <button className="admin-add-btn" onClick={onAdd} type="button">
-          {addLabel}
-        </button>
+        {onAdd && (
+          <button className="admin-add-btn" onClick={onAdd} type="button">
+            {addLabel}
+          </button>
+        )}
       </div>
 
       {loading ? (

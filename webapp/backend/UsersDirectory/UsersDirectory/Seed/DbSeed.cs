@@ -10,12 +10,12 @@ namespace UsersDirectory.Seed
     {
         private readonly UsersDbContext _dbContext;
         private readonly ILogger<DbSeed> _logger;
-        private readonly IPasswordHasher<AddUserCommand> _passwordHasher;
+        private readonly IPasswordHasher<string> _passwordHasher;
 
         public DbSeed(
             UsersDbContext dbContext, 
             ILogger<DbSeed> logger, 
-            IPasswordHasher<AddUserCommand> passwordHasher
+            IPasswordHasher<string> passwordHasher
         )
         {
             _dbContext = dbContext;
@@ -38,13 +38,17 @@ namespace UsersDirectory.Seed
                         Password = "admin123"
                     };
 
-                    newUser.Password = _passwordHasher.HashPassword(newUser, newUser.Password);
+                    newUser.Password = _passwordHasher.HashPassword(string.Empty, newUser.Password);
 
                     var userEntity = new UserEntity()
                     {
                         Email = newUser.Email,
                         Password = newUser.Password,
-                        Role = "Admin"
+                        Role = "Admin",
+                        CreatedAt = DateTime.UtcNow,
+                        LastUpdatedAt = DateTime.UtcNow,
+                        VerificationCode = Guid.NewGuid().ToString("N"),
+                        IsVerified = true
                     };
 
                     await _dbContext.Users.AddAsync(userEntity);
