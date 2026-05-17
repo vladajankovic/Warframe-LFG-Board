@@ -24,11 +24,21 @@ namespace ItemsStore.Tests.Services
             _service = new ResourceService(_repoMock.Object, _mapper);
         }
 
-        private static ResourceEntity MakeEntity(string name = "Ferrite", string? description = "A common resource.") =>
-            new() { Id = 1, ResourceName = name.ToSnakeCase(), Name = name, Description = description };
+        private static ResourceEntity MakeEntity(
+            string name = "Ferrite",
+            string? description = "A common resource.",
+            string? region = "Star Chart",
+            string? category = "Minerals",
+            string? group = "Common") =>
+            new() { Id = 1, ResourceName = name.ToSnakeCase(), Name = name, Description = description, Region = region, Category = category, Group = group };
 
-        private static AddResourceCommand MakeCommand(string name = "Ferrite", string description = "A common resource.") =>
-            new() { Name = name, Description = description };
+        private static AddResourceCommand MakeCommand(
+            string name = "Ferrite",
+            string description = "A common resource.",
+            string region = "Star Chart",
+            string category = "Minerals",
+            string group = "Common") =>
+            new() { Name = name, Description = description, Region = region, Category = category, Group = group };
 
         // ── CreateResource ───────────────────────────────────────────────────────
 
@@ -46,6 +56,9 @@ namespace ItemsStore.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(entity.Name, result.Name);
             Assert.Equal(entity.Description, result.Description);
+            Assert.Equal(entity.Region, result.Region);
+            Assert.Equal(entity.Category, result.Category);
+            Assert.Equal(entity.Group, result.Group);
         }
 
         [Fact]
@@ -135,8 +148,8 @@ namespace ItemsStore.Tests.Services
         [Fact]
         public async Task UpdateResource_WhenExists_ReturnsMappedResource()
         {
-            var command = MakeCommand("Ferrite", "Updated description.");
-            var updated = MakeEntity("Ferrite", "Updated description.");
+            var command = MakeCommand("Ferrite", "Updated description.", "Plains of Eidolon", "Gems", "Rare");
+            var updated = MakeEntity("Ferrite", "Updated description.", "Plains of Eidolon", "Gems", "Rare");
 
             _repoMock.Setup(r => r.GetResource(command.Name)).ReturnsAsync(MakeEntity());
             _repoMock.Setup(r => r.UpdateResource(command)).ReturnsAsync(updated);
@@ -145,6 +158,9 @@ namespace ItemsStore.Tests.Services
 
             Assert.NotNull(result);
             Assert.Equal("Updated description.", result.Description);
+            Assert.Equal("Plains of Eidolon", result.Region);
+            Assert.Equal("Gems", result.Category);
+            Assert.Equal("Rare", result.Group);
         }
 
         [Fact]

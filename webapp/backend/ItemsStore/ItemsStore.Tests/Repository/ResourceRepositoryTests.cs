@@ -28,11 +28,21 @@ namespace ItemsStore.Tests.Repository
             _context.Dispose();
         }
 
-        private static ResourceEntity SeedEntity(string name = "Ferrite", string? description = "A common resource.") =>
-            new() { Name = name, ResourceName = name.ToLower().Replace(" ", "_"), Description = description };
+        private static ResourceEntity SeedEntity(
+            string name = "Ferrite",
+            string? description = "A common resource.",
+            string? region = "Star Chart",
+            string? category = "Minerals",
+            string? group = "Common") =>
+            new() { Name = name, ResourceName = name.ToLower().Replace(" ", "_"), Description = description, Region = region, Category = category, Group = group };
 
-        private static AddResourceCommand MakeCommand(string name = "Ferrite", string description = "A common resource.") =>
-            new() { Name = name, Description = description };
+        private static AddResourceCommand MakeCommand(
+            string name = "Ferrite",
+            string description = "A common resource.",
+            string region = "Star Chart",
+            string category = "Minerals",
+            string group = "Common") =>
+            new() { Name = name, Description = description, Region = region, Category = category, Group = group };
 
         // ── CreateResource ───────────────────────────────────────────────────────
 
@@ -47,6 +57,9 @@ namespace ItemsStore.Tests.Repository
             Assert.Equal(command.Name, result.Name);
             Assert.Equal("ferrite", result.ResourceName);
             Assert.Equal(command.Description, result.Description);
+            Assert.Equal(command.Region, result.Region);
+            Assert.Equal(command.Category, result.Category);
+            Assert.Equal(command.Group, result.Group);
             Assert.Single(_context.Resources);
         }
 
@@ -152,12 +165,15 @@ namespace ItemsStore.Tests.Repository
             await _context.Resources.AddAsync(entity);
             await _context.SaveChangesAsync();
 
-            var command = MakeCommand("Ferrite", "Updated description.");
+            var command = MakeCommand("Ferrite", "Updated description.", "Plains of Eidolon", "Gems", "Rare");
 
             var result = await _repository.UpdateResource(command);
 
             Assert.NotNull(result);
             Assert.Equal("Updated description.", result.Description);
+            Assert.Equal("Plains of Eidolon", result.Region);
+            Assert.Equal("Gems", result.Category);
+            Assert.Equal("Rare", result.Group);
             Assert.Equal("Ferrite", result.Name);
         }
     }
