@@ -34,7 +34,7 @@ export default function ResourceDetailPage() {
           />
           <h1 className="detail-card__name">{resource.name}</h1>
           <p className="detail-card__sub">
-            {[resource.category, resource.wikiCategory, resource.group]
+            {[resource.region, resource.category, resource.group]
               .filter(Boolean)
               .join(' · ')}
           </p>

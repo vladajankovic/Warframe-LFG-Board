@@ -82,7 +82,7 @@ namespace ItemsStore.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut]
+        [HttpPatch]
         public async Task<IActionResult> UpdateRelic([FromBody] AddRelicCommand command)
         {
             try

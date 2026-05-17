@@ -89,7 +89,7 @@ namespace UsersDirectory.Controllers
             return result ? Ok() : NotFound();
         }
 
-        [HttpPut("user")]
+        [HttpPatch("user")]
         [Authorize]
         public async Task<IActionResult> UpdateUser([FromBody] AddUserCommand command)
         {

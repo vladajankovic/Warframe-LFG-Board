@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 export default function NavBar() {
   const [email, setEmail] = useState<string | null>(() => localStorage.getItem('user_email'))
+  const [role, setRole] = useState<string | null>(() => localStorage.getItem('user_role'))
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -13,6 +14,7 @@ export default function NavBar() {
     }
     function onAuthChanged() {
       setEmail(localStorage.getItem('user_email'))
+      setRole(localStorage.getItem('user_role'))
     }
     window.addEventListener('storage', onStorage)
     window.addEventListener('user_auth_changed', onAuthChanged)
@@ -27,6 +29,7 @@ export default function NavBar() {
     localStorage.removeItem('user_email')
     localStorage.removeItem('user_role')
     setEmail(null)
+    setRole(null)
     window.dispatchEvent(new Event('user_auth_changed'))
     navigate('/')
   }
@@ -38,6 +41,9 @@ export default function NavBar() {
       <div className="navbar__right">
         {email ? (
           <>
+            {role === 'Admin' && (
+              <Link to="/admin" className="navbar__admin-link">Admin Panel</Link>
+            )}
             <span className="navbar__user">{email}</span>
             <button className="navbar__logout" onClick={handleLogout} type="button">
               Logout

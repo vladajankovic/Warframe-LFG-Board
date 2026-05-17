@@ -11,8 +11,8 @@ export interface Resource {
   id: number
   name: string
   description?: string
+  region?: string
   category?: string
-  wikiCategory?: string
   group?: string
 }
 
@@ -45,4 +45,76 @@ export async function fetchResourceByName(name: string): Promise<Resource> {
   const res = await fetch(`${BASE_URL}/resources/resource/${encodeURIComponent(name)}`)
   if (!res.ok) throw new Error('Resource not found')
   return res.json() as Promise<Resource>
+}
+
+// ── Admin CRUD ────────────────────────────────────────────
+
+export interface AddRelicPayload {
+  name: string
+  type: number
+  code: string
+}
+
+export interface AddResourcePayload {
+  name: string
+  description: string
+  region: string
+  category: string
+  group: string
+}
+
+export async function createRelic(payload: AddRelicPayload): Promise<Relic> {
+  const res = await fetch(`${BASE_URL}/relics`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json() as Promise<Relic>
+}
+
+export async function updateRelic(payload: AddRelicPayload): Promise<Relic> {
+  const res = await fetch(`${BASE_URL}/relics`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json() as Promise<Relic>
+}
+
+export async function deleteRelic(name: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/relics/relic/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+    headers: { ...authHeaders() },
+  })
+  if (!res.ok) throw new Error(await res.text())
+}
+
+export async function createResource(payload: AddResourcePayload): Promise<Resource> {
+  const res = await fetch(`${BASE_URL}/resources`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json() as Promise<Resource>
+}
+
+export async function updateResource(payload: AddResourcePayload): Promise<Resource> {
+  const res = await fetch(`${BASE_URL}/resources`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(await res.text())
+  return res.json() as Promise<Resource>
+}
+
+export async function deleteResource(name: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/resources/resource/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+    headers: { ...authHeaders() },
+  })
+  if (!res.ok) throw new Error(await res.text())
 }

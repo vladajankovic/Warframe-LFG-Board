@@ -61,17 +61,17 @@ namespace ItemsStore.Utility
 
             foreach (Match tabMatch in tabPattern.Matches(html))
             {
-                var category = tabMatch.Groups[1].Value.Trim();
+                var region = tabMatch.Groups[1].Value.Trim();
                 var tabBody  = tabMatch.Groups[2].Value;
 
                 foreach (Match navboxMatch in navboxPattern.Matches(tabBody))
                 {
                     var navboxBody = navboxMatch.Groups[1].Value;
 
-                    string? wikiCategory = null;
+                    string? category = null;
                     var titleMatch = titlePattern.Match(navboxBody);
                     if (titleMatch.Success)
-                        wikiCategory = StripHtml(titleMatch.Groups[1].Value);
+                        category = StripHtml(titleMatch.Groups[1].Value);
 
                     foreach (Match groupMatch in groupPattern.Matches(navboxBody))
                     {
@@ -85,10 +85,10 @@ namespace ItemsStore.Utility
 
                             results.Add(new WikiResourceItemDTO
                             {
-                                Name         = name,
-                                Category     = category,
-                                WikiCategory = wikiCategory,
-                                Group        = group
+                                Name = name,
+                                Region = region,
+                                Category = category,
+                                Group = group
                             });
                         }
                     }

@@ -21,9 +21,9 @@ namespace ItemsStore.Database.Configuration
                 .HasMaxLength(128);
             builder.Property(x => x.Description)
                 .HasMaxLength(512);
-            builder.Property(x => x.Category)
+            builder.Property(x => x.Region)
                 .HasMaxLength(64);
-            builder.Property(x => x.WikiCategory)
+            builder.Property(x => x.Category)
                 .HasMaxLength(128);
             builder.Property(x => x.Group)
                 .HasMaxLength(128);

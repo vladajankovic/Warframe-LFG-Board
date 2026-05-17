@@ -65,7 +65,7 @@ namespace ItemsStore.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut]
+        [HttpPatch]
         public async Task<IActionResult> UpdateResource([FromBody] AddResourceCommand command)
         {
             try

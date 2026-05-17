@@ -21,7 +21,10 @@ namespace ItemsStore.Repository
             {
                 Name = command.Name,
                 ResourceName = command.Name.ToSnakeCase(),
-                Description = command.Description
+                Description = command.Description,
+                Region = command.Region,
+                Category = command.Category,
+                Group = command.Group,
             };
             
             await _itemsDbContext.AddAsync(resourceEntity);
@@ -62,6 +65,9 @@ namespace ItemsStore.Repository
             var resourceEntity = await GetResource(command.Name);
 
             resourceEntity.Description = command.Description;
+            resourceEntity.Region = command.Region;
+            resourceEntity.Category = command.Category;
+            resourceEntity.Group = command.Group;
 
             await _itemsDbContext.SaveChangesAsync();
 

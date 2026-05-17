@@ -12,20 +12,24 @@ const CATEGORIES = [
   'Höllvania',
   'Dark Refractory',
   'Miscellaneous',
+  'Others',
 ] as const
 type CategoryFilter = (typeof CATEGORIES)[number]
 
-/** Two-level tree: wikiCategory (or '') → group → resources */
+/** Regions that are explicitly named (excludes ALL and Others) */
+const NAMED_REGIONS = new Set<string>(CATEGORIES.slice(1, -1))
+
+/** Two-level tree: category (or '') → group → resources */
 type GroupTree = Record<string, Record<string, Resource[]>>
 
 function buildTree(resources: Resource[]): GroupTree {
   const tree: GroupTree = {}
   for (const r of resources) {
-    const wiki  = r.wikiCategory ?? ''
-    const group = r.group ?? 'Other'
-    if (!tree[wiki])        tree[wiki] = {}
-    if (!tree[wiki][group]) tree[wiki][group] = []
-    tree[wiki][group].push(r)
+    const cat   = r.category ?? ''
+    const group = r.group ?? 'Unclassified'
+    if (!tree[cat])        tree[cat] = {}
+    if (!tree[cat][group]) tree[cat][group] = []
+    tree[cat][group].push(r)
   }
   return tree
 }
@@ -45,9 +49,13 @@ export default function ResourcesPage() {
       .finally(() => setLoading(false))
   }, [])
 
+  /** Effective region for a resource — unmapped regions fall to 'Others' */
+  const effectiveRegion = (r: Resource) =>
+    r.region && NAMED_REGIONS.has(r.region) ? r.region : 'Others'
+
   /** Categories that actually contain data */
   const presentCategories = useMemo(
-    () => new Set(resources.map((r) => r.category ?? '')),
+    () => new Set(resources.map(effectiveRegion)),
     [resources],
   )
 
@@ -62,7 +70,7 @@ export default function ResourcesPage() {
     for (const cat of categories) {
       const matches = resources.filter(
         (r) =>
-          r.category === cat &&
+          effectiveRegion(r) === cat &&
           (search === '' || r.name.toLowerCase().includes(search.toLowerCase())),
       )
       if (matches.length > 0) result[cat] = buildTree(matches)
@@ -108,9 +116,9 @@ export default function ResourcesPage() {
         <section key={cat} className="relic-group">
           <h2 className="relic-group__title">{cat}</h2>
 
-          {Object.entries(tree).map(([wiki, groups]) => (
-            <div key={wiki} className="resource-wiki-section">
-              {wiki && <h3 className="resource-wiki-title">{wiki}</h3>}
+          {Object.entries(tree).map(([category, groups]) => (
+            <div key={category} className="resource-wiki-section">
+              {category && <h3 className="resource-wiki-title">{category}</h3>}
 
               {Object.entries(groups).map(([group, items]) => (
                 <div key={group} className="resource-group">

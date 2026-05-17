@@ -121,10 +121,21 @@ namespace ItemsStore.Seed
                     Name = item.Name,
                     Description = allItems.Where(x => x.Name == item.Name).Select(x => x.Description).FirstOrDefault()?.Split('\n')[0],
                     ResourceName = item.Name.ToSnakeCase(),
+                    Region = item.Region,
                     Category = item.Category,
-                    WikiCategory = item.WikiCategory,
                     Group = item.Group
                 }).ToList();
+
+                // Manualy add credits currency
+                resourcesToAdd.Add(new ResourceEntity
+                {
+                    Name = "Credits",
+                    Description = "Warframe's standard currency. Obtain Blueprints, Equipment, and other Credit items from the Market.",
+                    ResourceName = "credits",
+                    Region = "Star Chart",
+                    Category = "Special",
+                    Group = "Miscellaneous"
+                });
 
                 await _dbContext.Resources.AddRangeAsync(resourcesToAdd);
                 await _dbContext.SaveChangesAsync();
