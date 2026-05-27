@@ -3,6 +3,7 @@ const BASE_URL = '/v1/directory'
 export interface User {
   email: string
   role: string
+  inGameName: string
   createdAt: string
   lastUpdatedAt: string
   isVerified: boolean
@@ -12,6 +13,7 @@ export interface UpdateUserPayload {
   email: string
   password?: string
   role?: string
+  inGameName?: string
   isVerified?: boolean
 }
 
@@ -52,6 +54,19 @@ export async function changePassword(email: string, oldPassword: string, newPass
     const msg = await res.text()
     throw new Error(msg || 'Failed to change password.')
   }
+}
+
+export async function updateInGameName(email: string, inGameName: string): Promise<User> {
+  const res = await fetch(`${BASE_URL}/user/me/ingamename`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ email, inGameName }),
+  })
+  if (!res.ok) {
+    const msg = await res.text()
+    throw new Error(msg || 'Failed to update in-game name.')
+  }
+  return res.json() as Promise<User>
 }
 
 export async function deleteUser(email: string): Promise<void> {

@@ -22,6 +22,8 @@ namespace UsersDirectory.Database.Configuration
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("User");
+            builder.Property(x => x.InGameName)
+                .IsRequired();
             builder.Property(x => x.CreatedAt)
                 .IsRequired();
             builder.Property(x => x.LastUpdatedAt)

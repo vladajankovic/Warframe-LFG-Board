@@ -22,6 +22,7 @@ interface UserModalProps {
 
 function UserModal({ initial, onClose, onSaved }: UserModalProps) {
   const [role, setRole] = useState(initial.role)
+  const [inGameName, setInGameName] = useState(initial.inGameName)
   const [isVerified, setIsVerified] = useState(initial.isVerified)
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -34,6 +35,7 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
     const payload: UpdateUserPayload = {
       email: initial.email,
       role,
+      inGameName,
       isVerified,
       ...(password ? { password } : {}),
     }
@@ -56,6 +58,15 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
           <label className="modal-label">
             Email
             <input className="modal-input" value={initial.email} disabled />
+          </label>
+          <label className="modal-label">
+            In-Game Name
+            <input
+              className="modal-input"
+              value={inGameName}
+              onChange={e => setInGameName(e.target.value)}
+              placeholder="In-game name"
+            />
           </label>
           <label className="modal-label">
             Role
@@ -108,6 +119,7 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
 
 const COLUMNS: ColumnDef<User>[] = [
   { header: 'Email', cell: u => u.email, sortKey: u => u.email },
+  { header: 'In-Game Name', cell: u => u.inGameName, sortKey: u => u.inGameName },
   { header: 'Role', cell: u => u.role, sortKey: u => u.role },
   {
     header: 'Verified',
@@ -146,6 +158,7 @@ export default function UsersAdminPage() {
 
   const filtered = users.filter(u =>
     u.email.toLowerCase().includes(search.toLowerCase()) ||
+    u.inGameName.toLowerCase().includes(search.toLowerCase()) ||
     u.role.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -169,7 +182,7 @@ export default function UsersAdminPage() {
         loading={loading}
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by email or role…"
+        searchPlaceholder="Search by email, in-game name or role…"
         getRowKey={u => u.email}
         emptyMessage="No users found."
         onEdit={u => setEditTarget(u)}

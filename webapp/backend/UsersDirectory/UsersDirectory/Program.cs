@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
 using UsersDirectory.Commands;
@@ -37,6 +38,8 @@ namespace UsersDirectory
             builder.Services.AddTransient<IValidator<AddUserCommand>, AddUserCommandValidator>();
             builder.Services.AddTransient<IValidator<UpdateUserCommand>, UpdateUserCommandValidator>();
             builder.Services.AddTransient<IValidator<ChangePasswordCommand>, ChangePasswordCommandValidator>();
+
+            builder.Services.AddFluentValidationAutoValidation();
 
             builder.Services.AddScoped<DbSeed>();
 

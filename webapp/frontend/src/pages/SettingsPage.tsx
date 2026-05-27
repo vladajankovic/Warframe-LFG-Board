@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changePassword, deleteOwnAccount } from '../api/usersApi'
+import { changePassword, deleteOwnAccount, updateInGameName } from '../api/usersApi'
 import { DeleteModal } from '../components/DeleteModal'
 
 export default function SettingsPage() {
@@ -14,6 +14,28 @@ export default function SettingsPage() {
   const [pwError, setPwError] = useState<string | null>(null)
   const [pwSuccess, setPwSuccess] = useState(false)
   const [pwSaving, setPwSaving] = useState(false)
+
+  // ── Change in-game name ─────────────────────────────────
+  const [inGameName, setInGameName] = useState('')
+  const [ignError, setIgnError] = useState<string | null>(null)
+  const [ignSuccess, setIgnSuccess] = useState(false)
+  const [ignSaving, setIgnSaving] = useState(false)
+
+  async function handleInGameNameChange(e: FormEvent) {
+    e.preventDefault()
+    setIgnError(null)
+    setIgnSuccess(false)
+    setIgnSaving(true)
+    try {
+      await updateInGameName(email, inGameName)
+      setIgnSuccess(true)
+      setInGameName('')
+    } catch (err) {
+      setIgnError(err instanceof Error ? err.message : 'Failed to update in-game name.')
+    } finally {
+      setIgnSaving(false)
+    }
+  }
 
   async function handlePasswordChange(e: FormEvent) {
     e.preventDefault()
@@ -107,9 +129,37 @@ export default function SettingsPage() {
           </form>
         </section>
 
+        {/* ── Change in-game name ── */}
+        <section className="settings-section">
+          <h2 className="settings-section__title">In-Game Name</h2>
+          {ignError && <p className="settings-msg settings-msg--error">{ignError}</p>}
+          {ignSuccess && <p className="settings-msg settings-msg--success">In-game name updated successfully.</p>}
+          <form className="settings-form" onSubmit={handleInGameNameChange}>
+            <label className="settings-label">
+              New In-Game Name
+              <input
+                className="settings-input"
+                type="text"
+                value={inGameName}
+                onChange={e => setInGameName(e.target.value)}
+                required
+                maxLength={50}
+                placeholder="Your in-game name"
+                autoComplete="off"
+              />
+            </label>
+            <button
+              type="submit"
+              className="settings-btn settings-btn--save"
+              disabled={ignSaving}
+            >
+              {ignSaving ? 'Saving…' : 'Update In-Game Name'}
+            </button>
+          </form>
+        </section>
+
         {/* ── Danger zone ── */}
         <section className="settings-section settings-section--danger">
-          <h2 className="settings-section__title settings-section__title--danger">Danger Zone</h2>
           <p className="settings-section__desc">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>

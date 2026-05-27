@@ -10,6 +10,8 @@
 
         public string Role { get; set; } = "User";
 
+        public string InGameName { get; set; } = "";
+
         public DateTime CreatedAt { get; set; }
 
         public DateTime LastUpdatedAt { get; set; }

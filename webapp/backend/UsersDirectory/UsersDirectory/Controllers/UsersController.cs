@@ -143,6 +143,34 @@ namespace UsersDirectory.Controllers
             }
         }
 
+        [HttpPatch("user/me/ingamename")]
+        [Authorize]
+        public async Task<IActionResult> UpdateInGameName([FromBody] UpdateInGameNameCommand command)
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            if (email != command.Email)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var result = await _userService.UpdateInGameName(command);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to update in-game name for user {command.Email}!");
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpDelete("user/me/delete")]
         [Authorize]
         public async Task<IActionResult> DeleteAccount([FromBody] AddUserCommand command)

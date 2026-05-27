@@ -13,6 +13,7 @@ namespace UsersDirectory.Services
         public Task<bool> IsUserVerified(string email);
         public Task<User> UpdateUser(UpdateUserCommand command);
         public Task<User> ChangePassword(ChangePasswordCommand command);
+        public Task<User> UpdateInGameName(UpdateInGameNameCommand command);
         public Task<bool> DeleteAccount(AddUserCommand command);
     }
 }

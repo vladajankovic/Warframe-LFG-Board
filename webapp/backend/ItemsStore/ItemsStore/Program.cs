@@ -11,6 +11,7 @@ using ItemsStore.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
 
@@ -37,6 +38,8 @@ namespace ItemsStore
 
             builder.Services.AddTransient<IValidator<AddRelicCommand>, AddRelicCommandValidator>();
             builder.Services.AddTransient<IValidator<AddResourceCommand>, AddResourceCommandValidator>();
+
+            builder.Services.AddFluentValidationAutoValidation();
 
             builder.Services.AddHttpClient<WarframeApiUtils>();
             builder.Services.AddScoped<DbSeed>();

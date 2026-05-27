@@ -68,6 +68,9 @@ namespace UsersDirectory.Repositories
             {
                 userEntity.Role = command.Role;
             }
+
+            userEntity.InGameName = command.InGameName;
+
             userEntity.IsVerified = command.IsVerified;
 
             userEntity.LastUpdatedAt = DateTime.UtcNow;

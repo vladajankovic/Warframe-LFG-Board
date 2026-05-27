@@ -35,6 +35,10 @@ namespace UsersDirectory.Migrations
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)");
 
+                    b.Property<string>("InGameName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsVerified")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

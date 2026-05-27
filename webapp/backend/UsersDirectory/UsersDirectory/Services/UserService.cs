@@ -156,6 +156,30 @@ namespace UsersDirectory.Services
                     Email = user.Email,
                     Password = user.NewPassword,
                     Role = foundUser.Role,
+                    InGameName = foundUser.InGameName,
+                    IsVerified = foundUser.IsVerified
+                }
+            );
+
+            return _mapper.Map<User>(updatedUser);
+        }
+
+        public async Task<User> UpdateInGameName(UpdateInGameNameCommand command)
+        {
+            var foundUser = await _userRepository.GetUser(command.Email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{command.Email}' not found");
+            }
+
+            var updatedUser = await _userRepository.UpdateUser(
+                new UpdateUserCommand
+                {
+                    Email = foundUser.Email,
+                    Password = foundUser.Password,
+                    Role = foundUser.Role,
+                    InGameName = command.InGameName,
                     IsVerified = foundUser.IsVerified
                 }
             );
