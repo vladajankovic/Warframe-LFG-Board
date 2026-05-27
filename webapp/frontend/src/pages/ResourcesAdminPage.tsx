@@ -8,6 +8,7 @@ import {
   type Resource,
   type AddResourcePayload,
 } from '../api/itemsApi'
+import { notifyError } from '../api/apiUtils'
 import { AdminTable, type ColumnDef } from '../components/AdminTable'
 import { DeleteModal } from '../components/DeleteModal'
 
@@ -26,12 +27,10 @@ function ResourceModal({ initial, onClose, onSaved }: ResourceModalProps) {
   const [region, setRegion] = useState(initial?.region ?? '')
   const [category, setCategory] = useState(initial?.category ?? '')
   const [group, setGroup] = useState(initial?.group ?? '')
-  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
     setSaving(true)
     const payload: AddResourcePayload = { name, description, region, category, group }
     try {
@@ -42,7 +41,7 @@ function ResourceModal({ initial, onClose, onSaved }: ResourceModalProps) {
       }
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      notifyError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
       setSaving(false)
     }
@@ -52,7 +51,6 @@ function ResourceModal({ initial, onClose, onSaved }: ResourceModalProps) {
     <div className="modal-overlay">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">{isEdit ? 'Edit Resource' : 'Add Resource'}</h2>
-        {error && <p className="modal-error">{error}</p>}
         <form className="modal-form" onSubmit={handleSubmit}>
           <label className="modal-label">
             Name

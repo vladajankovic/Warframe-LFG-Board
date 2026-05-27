@@ -88,7 +88,7 @@ namespace UsersDirectory.Services
             return _mapper.Map<User>(updatedUser);
         }
 
-        public async Task<LoginResponse> LoginUser(AddUserCommand user)
+        public async Task<LoginResponse> LoginUser(LoginCommand user)
         {
             var foundUser = await _userRepository.GetUser(user.Email);
 
@@ -111,6 +111,7 @@ namespace UsersDirectory.Services
                 Token = token,
                 Email = foundUser.Email,
                 Role = foundUser.Role,
+                InGameName = foundUser.InGameName,
             };
         }
 

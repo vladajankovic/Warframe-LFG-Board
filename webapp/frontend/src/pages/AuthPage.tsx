@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { login, register, type AuthCredentials } from '../api/usersApi'
+import { notifyError } from '../api/apiUtils'
 
 type Tab = 'login' | 'register'
 
@@ -9,13 +10,11 @@ export default function AuthPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   function switchTab(next: Tab) {
     setTab(next)
-    setError(null)
     setEmail('')
     setPassword('')
     setConfirmPassword('')
@@ -23,10 +22,9 @@ export default function AuthPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
 
     if (tab === 'register' && password !== confirmPassword) {
-      setError('Passwords do not match.')
+      notifyError('Passwords do not match.')
       return
     }
 
@@ -38,6 +36,7 @@ export default function AuthPage() {
         localStorage.setItem('auth_token', response.token)
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
+        localStorage.setItem('user_ign', response.inGameName ?? '')
       } else {
         await register(credentials)
         // auto-login after registration
@@ -45,11 +44,12 @@ export default function AuthPage() {
         localStorage.setItem('auth_token', response.token)
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
+        localStorage.setItem('user_ign', response.inGameName ?? '')
       }
       window.dispatchEvent(new Event('user_auth_changed'))
       navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      notifyError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
       setLoading(false)
     }
@@ -123,8 +123,6 @@ export default function AuthPage() {
               />
             </div>
           )}
-
-          {error && <p className="auth-error">{error}</p>}
 
           <button className="auth-submit" type="submit" disabled={loading}>
             {loading ? 'Please wait…' : tab === 'login' ? 'Login' : 'Create Account'}

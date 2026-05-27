@@ -7,6 +7,7 @@ import {
   type User,
   type UpdateUserPayload,
 } from '../api/usersApi'
+import { notifyError } from '../api/apiUtils'
 import { AdminTable, type ColumnDef } from '../components/AdminTable'
 import { DeleteModal } from '../components/DeleteModal'
 
@@ -25,12 +26,10 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
   const [inGameName, setInGameName] = useState(initial.inGameName)
   const [isVerified, setIsVerified] = useState(initial.isVerified)
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
     setSaving(true)
     const payload: UpdateUserPayload = {
       email: initial.email,
@@ -43,7 +42,7 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
       await updateUser(payload)
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      notifyError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
       setSaving(false)
     }
@@ -53,7 +52,6 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
     <div className="modal-overlay">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">Edit User</h2>
-        {error && <p className="modal-error">{error}</p>}
         <form className="modal-form" onSubmit={handleSubmit}>
           <label className="modal-label">
             Email

@@ -3,36 +3,35 @@ import { Link, useNavigate } from 'react-router-dom'
 
 export default function NavBar() {
   const [email, setEmail] = useState<string | null>(() => localStorage.getItem('user_email'))
+  const [ign, setIgn] = useState<string>(() => localStorage.getItem('user_ign') ?? '')
   const [role, setRole] = useState<string | null>(() => localStorage.getItem('user_role'))
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key === 'user_email') setEmail(e.newValue)
-    }
     function onAuthChanged() {
       setEmail(localStorage.getItem('user_email'))
       setRole(localStorage.getItem('user_role'))
+      setIgn(localStorage.getItem('user_ign') ?? '')
     }
-    window.addEventListener('storage', onStorage)
     window.addEventListener('user_auth_changed', onAuthChanged)
-    return () => {
-      window.removeEventListener('storage', onStorage)
-      window.removeEventListener('user_auth_changed', onAuthChanged)
-    }
+    return () => window.removeEventListener('user_auth_changed', onAuthChanged)
   }, [])
 
   function handleLogout() {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_email')
     localStorage.removeItem('user_role')
+    localStorage.removeItem('user_ign')
     setEmail(null)
     setRole(null)
+    setIgn('')
     setOpen(false)
     window.dispatchEvent(new Event('user_auth_changed'))
     navigate('/')
   }
+
+  const displayName = ign || email
 
   return (
     <nav className="navbar">
@@ -48,7 +47,7 @@ export default function NavBar() {
             onMouseLeave={() => setOpen(false)}
           >
             <span className="navbar__user-trigger">
-              {email}
+              {displayName}
               <span className="navbar__user-caret">▾</span>
             </span>
 

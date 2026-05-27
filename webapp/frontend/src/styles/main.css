@@ -1581,3 +1581,43 @@ body {
 .home-footer__sep {
   display: none;
 }
+
+/* ── Alertify theme overrides ────────────────────────────── */
+.alertify-notifier .ajs-message {
+  font-family: var(--font);
+  font-size: 0.875rem;
+  border-radius: var(--radius);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-left: 3px solid var(--border);
+}
+
+.alertify-notifier .ajs-message.ajs-error {
+  background: var(--surface);
+  border-color: var(--border);
+  border-left: 3px solid var(--danger);
+}
+
+.alertify-notifier .ajs-message.ajs-success {
+  background: var(--surface);
+  border-color: var(--border);
+  border-left: 3px solid #6fcf97;
+}
+
+.alertify-notifier .ajs-message.ajs-warning {
+  background: var(--surface);
+  border-color: var(--border);
+  border-left: 3px solid var(--accent);
+}
+
+.alertify-notifier .ajs-message .ajs-close {
+  background-color: transparent;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.alertify-notifier .ajs-message .ajs-close:hover {
+  opacity: 1;
+}

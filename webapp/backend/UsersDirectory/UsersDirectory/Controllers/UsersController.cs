@@ -59,7 +59,7 @@ namespace UsersDirectory.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginUser([FromBody] AddUserCommand command)
+        public async Task<IActionResult> LoginUser([FromBody] LoginCommand command)
         {
             try
             {

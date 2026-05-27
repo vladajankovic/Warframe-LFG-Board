@@ -1,3 +1,5 @@
+import { parseApiError } from './apiUtils'
+
 const BASE_URL = '/v1/directory'
 
 export interface User {
@@ -37,10 +39,7 @@ export async function updateUser(payload: UpdateUserPayload): Promise<User> {
     headers: authHeaders(),
     body: JSON.stringify(payload),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Failed to update user.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to update user.'))
   return res.json() as Promise<User>
 }
 
@@ -50,10 +49,7 @@ export async function changePassword(email: string, oldPassword: string, newPass
     headers: authHeaders(),
     body: JSON.stringify({ email, oldPassword, newPassword }),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Failed to change password.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to change password.'))
 }
 
 export async function updateInGameName(email: string, inGameName: string): Promise<User> {
@@ -62,10 +58,7 @@ export async function updateInGameName(email: string, inGameName: string): Promi
     headers: authHeaders(),
     body: JSON.stringify({ email, inGameName }),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Failed to update in-game name.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to update in-game name.'))
   return res.json() as Promise<User>
 }
 
@@ -83,10 +76,7 @@ export async function deleteOwnAccount(email: string, password: string): Promise
     headers: authHeaders(),
     body: JSON.stringify({ email, password }),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Failed to delete account.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to delete account.'))
 }
 
 export interface AuthCredentials {
@@ -98,6 +88,7 @@ export interface LoginResponse {
   token: string
   email: string
   role: string
+  inGameName: string
 }
 
 export function getAuthToken(): string | null {
@@ -110,10 +101,7 @@ export async function login(credentials: AuthCredentials): Promise<LoginResponse
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Invalid credentials.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Invalid credentials.'))
   return res.json() as Promise<LoginResponse>
 }
 
@@ -123,8 +111,5 @@ export async function register(credentials: AuthCredentials): Promise<void> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
   })
-  if (!res.ok) {
-    const msg = await res.text()
-    throw new Error(msg || 'Registration failed.')
-  }
+  if (!res.ok) throw new Error(await parseApiError(res, 'Registration failed.'))
 }

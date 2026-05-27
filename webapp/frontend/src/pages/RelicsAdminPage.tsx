@@ -8,6 +8,7 @@ import {
   type Relic,
   type AddRelicPayload,
 } from '../api/itemsApi'
+import { notifyError } from '../api/apiUtils'
 import { AdminTable, type ColumnDef } from '../components/AdminTable'
 import { DeleteModal } from '../components/DeleteModal'
 
@@ -47,12 +48,10 @@ function RelicModal({ initial, onClose, onSaved }: RelicModalProps) {
     return initial.relicType as unknown as number
   })
   const [code, setCode] = useState(initial?.relicCode ?? '')
-  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    setError(null)
     setSaving(true)
     const payload: AddRelicPayload = { name, type, code }
     try {
@@ -63,7 +62,7 @@ function RelicModal({ initial, onClose, onSaved }: RelicModalProps) {
       }
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      notifyError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
       setSaving(false)
     }
@@ -73,7 +72,6 @@ function RelicModal({ initial, onClose, onSaved }: RelicModalProps) {
     <div className="modal-overlay">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">{isEdit ? 'Edit Relic' : 'Add Relic'}</h2>
-        {error && <p className="modal-error">{error}</p>}
         <form className="modal-form" onSubmit={handleSubmit}>
           <label className="modal-label">
             Name

@@ -1,4 +1,5 @@
 import { getAuthToken } from './usersApi'
+import { parseApiError } from './apiUtils'
 
 export interface Relic {
   id: number
@@ -69,7 +70,7 @@ export async function createRelic(payload: AddRelicPayload): Promise<Relic> {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
   return res.json() as Promise<Relic>
 }
 
@@ -79,7 +80,7 @@ export async function updateRelic(payload: AddRelicPayload): Promise<Relic> {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
   return res.json() as Promise<Relic>
 }
 
@@ -88,7 +89,7 @@ export async function deleteRelic(name: string): Promise<void> {
     method: 'DELETE',
     headers: { ...authHeaders() },
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
 }
 
 export async function createResource(payload: AddResourcePayload): Promise<Resource> {
@@ -97,7 +98,7 @@ export async function createResource(payload: AddResourcePayload): Promise<Resou
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
   return res.json() as Promise<Resource>
 }
 
@@ -107,7 +108,7 @@ export async function updateResource(payload: AddResourcePayload): Promise<Resou
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
   return res.json() as Promise<Resource>
 }
 
@@ -116,5 +117,5 @@ export async function deleteResource(name: string): Promise<void> {
     method: 'DELETE',
     headers: { ...authHeaders() },
   })
-  if (!res.ok) throw new Error(await res.text())
+  if (!res.ok) throw new Error(await parseApiError(res))
 }
