@@ -85,6 +85,7 @@ export interface AuthCredentials {
 }
 
 export interface LoginResponse {
+  userId: string
   token: string
   email: string
   role: string

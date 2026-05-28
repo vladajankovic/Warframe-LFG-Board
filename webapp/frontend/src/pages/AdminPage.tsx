@@ -26,6 +26,14 @@ const MENU_ITEMS = [
     available: true,
   },
   {
+    id: 'group-requests',
+    title: 'Group Requests',
+    description: 'View and manage player group requests.',
+    icon: '⚑',
+    path: '/admin/group-requests',
+    available: true,
+  },
+  {
     id: 'logs',
     title: 'View Logs',
     description: 'Inspect application activity logs.',

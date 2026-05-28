@@ -104,10 +104,11 @@ namespace UsersDirectory.Services
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
-            var token = GenerateJwtToken(foundUser.Email, foundUser.Role);
+            var token = GenerateJwtToken(foundUser.Id, foundUser.Email, foundUser.Role);
 
             return new LoginResponse
             {
+                UserId = foundUser.Id,
                 Token = token,
                 Email = foundUser.Email,
                 Role = foundUser.Role,
@@ -207,14 +208,14 @@ namespace UsersDirectory.Services
             return await _userRepository.DeleteUser(user.Email);
         }
 
-        private string GenerateJwtToken(string email, string role)
+        private string GenerateJwtToken(string id, string email, string role)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Sub, id),
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

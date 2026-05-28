@@ -20,6 +20,7 @@ export default function NavBar() {
 
   function handleLogout() {
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('user_id')
     localStorage.removeItem('user_email')
     localStorage.removeItem('user_role')
     localStorage.removeItem('user_ign')
@@ -53,6 +54,13 @@ export default function NavBar() {
 
             {open && (
               <div className="navbar__dropdown">
+                <Link
+                  to="/my-requests"
+                  className="navbar__dropdown-item"
+                  onClick={() => setOpen(false)}
+                >
+                  ⚑ My Requests
+                </Link>
                 <Link
                   to="/settings"
                   className="navbar__dropdown-item"

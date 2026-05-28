@@ -10,6 +10,10 @@ export default defineConfig({
         target: 'http://localhost:8081',
         changeOrigin: true,
       },
+      '/v1/grouprequests': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+      },
       '/v1': {
         target: 'http://localhost:8080',
         changeOrigin: true,

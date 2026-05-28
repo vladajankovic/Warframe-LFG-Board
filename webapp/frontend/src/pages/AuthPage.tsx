@@ -34,6 +34,7 @@ export default function AuthPage() {
       if (tab === 'login') {
         const response = await login(credentials)
         localStorage.setItem('auth_token', response.token)
+        localStorage.setItem('user_id', response.userId ?? '')
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
         localStorage.setItem('user_ign', response.inGameName ?? '')
@@ -42,6 +43,7 @@ export default function AuthPage() {
         // auto-login after registration
         const response = await login(credentials)
         localStorage.setItem('auth_token', response.token)
+        localStorage.setItem('user_id', response.userId ?? '')
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
         localStorage.setItem('user_ign', response.inGameName ?? '')

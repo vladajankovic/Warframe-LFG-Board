@@ -11,7 +11,9 @@ import AdminLayout from './pages/AdminLayout'
 import RelicsAdminPage from './pages/RelicsAdminPage'
 import ResourcesAdminPage from './pages/ResourcesAdminPage'
 import UsersAdminPage from './pages/UsersAdminPage'
+import GroupRequestsAdminPage from './pages/GroupRequestsAdminPage'
 import SettingsPage from './pages/SettingsPage'
+import MyGroupRequestsPage from './pages/MyGroupRequestsPage'
 
 function RequireAuth({ role }: { role?: string }) {
   const token = localStorage.getItem('auth_token')
@@ -60,6 +62,7 @@ export default function App() {
           <Route path="/resources/:name" element={<ResourceDetailPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/my-requests" element={<MyGroupRequestsPage />} />
           </Route>
           <Route element={<RequireAuth role="Admin" />}>
             <Route path="/admin" element={<AdminLayout />}>
@@ -67,6 +70,7 @@ export default function App() {
               <Route path="relics" element={<RelicsAdminPage />} />
               <Route path="resources" element={<ResourcesAdminPage />} />
               <Route path="users" element={<UsersAdminPage />} />
+              <Route path="group-requests" element={<GroupRequestsAdminPage />} />
             </Route>
           </Route>
         </Route>

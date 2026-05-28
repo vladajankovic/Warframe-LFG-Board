@@ -1621,3 +1621,211 @@ body {
 .alertify-notifier .ajs-message .ajs-close:hover {
   opacity: 1;
 }
+
+/* ── Group Request section (detail pages) ────────────────── */
+.gr-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem 2rem;
+  background: rgba(23, 27, 36, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+}
+
+.gr-section__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.gr-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.gr-tab {
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.gr-tab:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.gr-tab--active {
+  background: rgba(200, 168, 75, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gr-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.gr-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.gr-item__icon {
+  color: var(--accent-2);
+  font-size: 0.75rem;
+}
+
+.gr-item__name {
+  color: var(--text);
+}
+
+.gr-item__refinement {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--accent);
+  background: rgba(200, 168, 75, 0.1);
+  border: 1px solid rgba(200, 168, 75, 0.25);
+  border-radius: var(--radius);
+  padding: 0.1rem 0.45rem;
+}
+
+.gr-notice {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.gr-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.gr-link:hover {
+  text-decoration: underline;
+}
+
+.gr-action {
+  padding-top: 0.25rem;
+}
+
+.gr-active {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gr-badge {
+  font-size: 0.85rem;
+  color: #6fcf97;
+  background: rgba(111, 207, 151, 0.1);
+  border: 1px solid rgba(111, 207, 151, 0.3);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.7rem;
+}
+
+.gr-btn {
+  padding: 0.45rem 1.1rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.gr-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gr-btn:not(:disabled):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.gr-btn--create {
+  background: var(--accent);
+  color: #000;
+}
+
+.gr-btn--remove {
+  background: rgba(224, 92, 92, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(224, 92, 92, 0.35);
+}
+
+/* ── My Requests page list ───────────────────────────────── */
+.my-gr-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.my-gr-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.my-gr-item__name {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Admin Group Requests filter bar ─────────────────────── */
+.admin-gr-filters {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.admin-add-btn--secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.admin-add-btn--secondary:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.admin-gr__userid {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: monospace;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

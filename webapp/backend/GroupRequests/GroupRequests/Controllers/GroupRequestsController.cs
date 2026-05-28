@@ -41,35 +41,11 @@ namespace GroupRequests.Controllers
             return Ok(_mapper.Map<List<GroupRequest>>(result));
         }
 
-        [HttpGet("admin/all")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllGroupRequestsAdmin()
-        {
-            var result = await _groupRequestsService.GetAllGroupRequests();
-            return Ok(result);
-        }
-
         [HttpGet("item/{itemName}")]
         public async Task<IActionResult> GetGroupRequestsByItemName([FromRoute] string itemName)
         {
             var result = await _groupRequestsService.GetGroupRequestsByItemName(itemName);
-            return result != null && result.Count > 0 ? Ok(_mapper.Map<List<GroupRequest>>(result)) : NotFound();
-        }
-
-        [HttpGet("admin/item/{itemName}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetGroupRequestsByItemNameAdmin([FromRoute] string itemName)
-        {
-            var result = await _groupRequestsService.GetGroupRequestsByItemName(itemName);
-            return result != null && result.Count > 0 ? Ok(result) : NotFound();
-        }
-
-        [HttpGet("admin/user/{userId}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetGroupRequestsByUserId([FromRoute] string userId)
-        {
-            var result = await _groupRequestsService.GetGroupRequestsByUserId(userId);
-            return result != null && result.Count > 0 ? Ok(result) : NotFound();
+            return Ok(_mapper.Map<List<GroupRequest>>(result ?? []));
         }
 
         [HttpGet("me")]
@@ -84,12 +60,30 @@ namespace GroupRequests.Controllers
             return Ok(result);
         }
 
-        [HttpGet("admin/user/{userId}/item/{itemName}")]
+        [HttpGet("admin")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetGroupRequest([FromRoute] string userId, [FromRoute] string itemName)
+        public async Task<IActionResult> GetGroupRequestsAdmin(
+            [FromQuery] string? userId,
+            [FromQuery] string? itemName)
         {
-            var result = await _groupRequestsService.GetGroupRequest(userId, itemName);
-            return result != null ? Ok(result) : NotFound();
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(itemName))
+            {
+                var result = await _groupRequestsService.GetGroupRequest(userId, itemName);
+                return result != null ? Ok(new List<GroupRequestDTO> { result }) : Ok(new List<GroupRequestDTO>());
+            }
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var result = await _groupRequestsService.GetGroupRequestsByUserId(userId);
+                return Ok(result ?? []);
+            }
+            if (!string.IsNullOrEmpty(itemName))
+            {
+                var result = await _groupRequestsService.GetGroupRequestsByItemName(itemName);
+                return Ok(result ?? []);
+            }
+
+            var all = await _groupRequestsService.GetAllGroupRequests();
+            return Ok(all);
         }
 
         [HttpPost]
@@ -145,9 +139,11 @@ namespace GroupRequests.Controllers
             return deleted ? NoContent() : NotFound();
         }
 
-        [HttpDelete("admin/user/{userId}/item/{itemName}")]
+        [HttpDelete("admin")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AdminDeleteGroupRequest([FromRoute] string userId, [FromRoute] string itemName)
+        public async Task<IActionResult> AdminDeleteGroupRequest(
+            [FromQuery] string userId,
+            [FromQuery] string itemName)
         {
             var command = new DeleteGroupRequestCommand
             {
