@@ -63,47 +63,61 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
     }
   }
 
+  const otherRequests = requests.filter(r => r.inGameName !== ign)
+
   return (
     <div className="gr-section">
       <h2 className="gr-section__title">Group Requests</h2>
 
-      {loadingList ? (
-        <p className="gr-notice">Loading…</p>
-      ) : requests.length === 0 ? (
-        <p className="gr-notice">No group requests yet.</p>
+      {!email ? (
+        <p className="gr-notice">
+          <Link to="/login" className="gr-link">Log in</Link> to request a group.
+        </p>
+      ) : !ign ? (
+        <p className="gr-notice">
+          Set your <Link to="/settings" className="gr-link">in-game name</Link> in Settings to request a group.
+        </p>
+      ) : hasOwn ? (
+        <div className="gr-item gr-item--own">
+          <img
+            className="gr-item__img"
+            src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
+            alt=""
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+          />
+          <span className="gr-item__name">{ign}</span>
+          <button className="gr-btn gr-btn--remove gr-btn--inline" onClick={handleDelete} disabled={acting}>
+            {acting ? 'Removing…' : 'Remove'}
+          </button>
+        </div>
       ) : (
-        <ul className="gr-list">
-          {requests.map((r, i) => (
-            <li key={i} className="gr-item">
-              <span className="gr-item__icon">◉</span>
-              <span className="gr-item__name">{r.inGameName}</span>
-            </li>
-          ))}
-        </ul>
+        <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting}>
+          {acting ? 'Requesting…' : '⚑ Request Group'}
+        </button>
       )}
 
-      <div className="gr-action">
-        {!email ? (
-          <p className="gr-notice">
-            <Link to="/login" className="gr-link">Log in</Link> to request a group.
-          </p>
-        ) : !ign ? (
-          <p className="gr-notice">
-            Set your <Link to="/settings" className="gr-link">in-game name</Link> in Settings to request a group.
-          </p>
-        ) : hasOwn ? (
-          <div className="gr-active">
-            <span className="gr-badge">✓ Your request is active</span>
-            <button className="gr-btn gr-btn--remove" onClick={handleDelete} disabled={acting}>
-              {acting ? 'Removing…' : 'Remove'}
-            </button>
-          </div>
-        ) : (
-          <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting}>
-            {acting ? 'Requesting…' : '⚑ Request Group'}
-          </button>
-        )}
-      </div>
+      {loadingList ? (
+        <p className="gr-notice">Loading…</p>
+      ) : otherRequests.length > 0 ? (
+        <>
+          <div className="gr-divider" />
+          <ul className="gr-list">
+            {otherRequests.map((r, i) => (
+              <li key={i} className="gr-item">
+                <img
+                  className="gr-item__img"
+                  src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
+                  alt=""
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                />
+                <span className="gr-item__name">{r.inGameName}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : !hasOwn ? (
+        <p className="gr-notice">No group requests yet.</p>
+      ) : null}
     </div>
   )
 }

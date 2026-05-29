@@ -1691,9 +1691,28 @@ body {
   font-size: 0.9rem;
 }
 
-.gr-item__icon {
-  color: var(--accent-2);
-  font-size: 0.75rem;
+.gr-item--own {
+  border-color: rgba(200, 168, 75, 0.4);
+  background: rgba(200, 168, 75, 0.06);
+}
+
+.gr-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.5rem 0;
+}
+
+.gr-btn--inline {
+  margin-left: auto;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+}
+
+.gr-item__img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .gr-item__name {

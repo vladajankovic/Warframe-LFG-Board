@@ -10,7 +10,7 @@ import {
 } from '../api/groupRequestsApi'
 import { notifyError, notifySuccess } from '../api/apiUtils'
 
-function relicImgSrc(relicType: string, quality: 'Intact' | 'Radiant') {
+function relicImgSrc(relicType: string, quality: string) {
   const typeKey =
     relicType.toUpperCase() === 'VANGUARD'
       ? 'Axi'
@@ -18,7 +18,7 @@ function relicImgSrc(relicType: string, quality: 'Intact' | 'Radiant') {
   return `/images/relics/${typeKey}Relic${quality}.png`
 }
 
-const REFINEMENTS = ['Intact', 'Flawless', 'Exceptional', 'Radiant'] as const
+const REFINEMENTS = ['Intact', 'Exceptional', 'Flawless', 'Radiant'] as const
 type Refinement = typeof REFINEMENTS[number]
 type GrTab = 'All' | Refinement
 
@@ -31,7 +31,7 @@ function extractRefinement(fullItemName: string): string {
   return match ? match[1] : ''
 }
 
-function GroupRequestSection({ itemName }: { itemName: string }) {
+function GroupRequestSection({ itemName, relicType }: { itemName: string; relicType: string }) {
   const email = localStorage.getItem('user_email')
   const ign = localStorage.getItem('user_ign') ?? ''
 
@@ -91,6 +91,7 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
   }
 
   const ownRefinement = ownRequest ? extractRefinement(ownRequest.itemName) : null
+  const otherRequests = requests.filter(r => r.inGameName !== ign)
 
   return (
     <div className="gr-section">
@@ -109,48 +110,59 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
         ))}
       </div>
 
-      {loadingList ? (
-        <p className="gr-notice">Loading…</p>
-      ) : requests.length === 0 ? (
-        <p className="gr-notice">No group requests yet.</p>
+      {!email ? (
+        <p className="gr-notice">
+          <Link to="/login" className="gr-link">Log in</Link> to request a group.
+        </p>
+      ) : !ign ? (
+        <p className="gr-notice">
+          Set your <Link to="/settings" className="gr-link">in-game name</Link> in Settings to request a group.
+        </p>
+      ) : ownRequest ? (
+        <div className="gr-item gr-item--own">
+          <img
+            className="gr-item__img"
+            src={relicImgSrc(relicType, ownRefinement ?? 'Intact')}
+            alt=""
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+          />
+          <span className="gr-item__name">{ign}</span>
+          {ownRefinement && <span className="gr-item__refinement">{ownRefinement}</span>}
+          <button className="gr-btn gr-btn--remove gr-btn--inline" onClick={handleDelete} disabled={acting}>
+            {acting ? 'Removing…' : 'Remove'}
+          </button>
+        </div>
+      ) : activeTab === 'All' ? (
+        <p className="gr-notice">Select a refinement tab to create a group request.</p>
       ) : (
-        <ul className="gr-list">
-          {requests.map((r, i) => (
-            <li key={i} className="gr-item">
-              <span className="gr-item__icon">◉</span>
-              <span className="gr-item__name">{r.inGameName}</span>
-              {activeTab === 'All' && (
-                <span className="gr-item__refinement">{extractRefinement(r.itemName)}</span>
-              )}
-            </li>
-          ))}
-        </ul>
+        <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting}>
+          {acting ? 'Requesting…' : `⚑ Request Group (${activeTab})`}
+        </button>
       )}
 
-      <div className="gr-action">
-        {!email ? (
-          <p className="gr-notice">
-            <Link to="/login" className="gr-link">Log in</Link> to request a group.
-          </p>
-        ) : !ign ? (
-          <p className="gr-notice">
-            Set your <Link to="/settings" className="gr-link">in-game name</Link> in Settings to request a group.
-          </p>
-        ) : ownRequest ? (
-          <div className="gr-active">
-            <span className="gr-badge">✓ Your request is active{ownRefinement ? ` (${ownRefinement})` : ''}</span>
-            <button className="gr-btn gr-btn--remove" onClick={handleDelete} disabled={acting}>
-              {acting ? 'Removing…' : 'Remove'}
-            </button>
-          </div>
-        ) : activeTab === 'All' ? (
-          <p className="gr-notice">Select a refinement tab to create a group request.</p>
-        ) : (
-          <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting}>
-            {acting ? 'Requesting…' : `⚑ Request Group (${activeTab})`}
-          </button>
-        )}
-      </div>
+      {loadingList ? (
+        <p className="gr-notice">Loading…</p>
+      ) : otherRequests.length > 0 ? (
+        <>
+          <div className="gr-divider" />
+          <ul className="gr-list">
+            {otherRequests.map((r, i) => (
+              <li key={i} className="gr-item">
+                <img
+                  className="gr-item__img"
+                  src={relicImgSrc(relicType, extractRefinement(r.itemName))}
+                  alt=""
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                />
+                <span className="gr-item__name">{r.inGameName}</span>
+                <span className="gr-item__refinement">{extractRefinement(r.itemName)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : !ownRequest ? (
+        <p className="gr-notice">No group requests yet.</p>
+      ) : null}
     </div>
   )
 }
@@ -190,7 +202,7 @@ export default function RelicDetailPage() {
             <p className="detail-card__sub">{relic.relicType} · {relic.relicCode}</p>
           </div>
 
-          <GroupRequestSection itemName={relic.name} />
+          <GroupRequestSection itemName={relic.name} relicType={relic.relicType} />
         </>
       )}
     </div>
