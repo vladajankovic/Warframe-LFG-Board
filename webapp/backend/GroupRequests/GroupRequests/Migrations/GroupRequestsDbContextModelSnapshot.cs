@@ -16,6 +16,7 @@ namespace GroupRequests.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("GroupRequestsSchema")
                 .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -46,7 +47,7 @@ namespace GroupRequests.Migrations
                     b.HasIndex("UserId", "ItemName")
                         .IsUnique();
 
-                    b.ToTable("GroupRequests");
+                    b.ToTable("GroupRequests", "GroupRequestsSchema");
                 });
 #pragma warning restore 612, 618
         }

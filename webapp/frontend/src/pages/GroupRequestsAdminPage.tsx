@@ -87,7 +87,7 @@ export default function GroupRequestsAdminPage() {
                     <td>{r.itemName}</td>
                     <td className="admin-table__actions">
                       <button
-                        className="admin-table__btn admin-table__btn--delete"
+                        className="admin-action-btn admin-action-btn--delete"
                         onClick={() => setDeleteTarget(r)}
                         type="button"
                       >

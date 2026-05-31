@@ -6,6 +6,7 @@ import { DeleteModal } from '../components/DeleteModal'
 
 export default function SettingsPage() {
   const email = localStorage.getItem('user_email') ?? ''
+  const [currentIgn, setCurrentIgn] = useState(localStorage.getItem('user_ign') ?? '')
   const navigate = useNavigate()
 
   // ── Change password ─────────────────────────────────────
@@ -24,6 +25,7 @@ export default function SettingsPage() {
     try {
       await updateInGameName(email, inGameName)
       localStorage.setItem('user_ign', inGameName)
+      setCurrentIgn(inGameName)
       window.dispatchEvent(new Event('user_auth_changed'))
       notifySuccess('In-game name updated successfully.')
       setInGameName('')
@@ -70,7 +72,18 @@ export default function SettingsPage() {
     <div className="settings-page">
       <div className="settings-card">
         <h1 className="settings-title">Account Settings</h1>
-        <p className="settings-email">{email}</p>
+
+        <div className="settings-info">
+          <h2 className="settings-section__title">User Info</h2>
+          <div className="settings-info__row">
+            <span className="settings-info__label">Email</span>
+            <span className="settings-info__value">{email}</span>
+          </div>
+          <div className="settings-info__row">
+            <span className="settings-info__label">In-Game Name</span>
+            <span className="settings-info__value">{currentIgn || <em className="settings-info__empty">Not set</em>}</span>
+          </div>
+        </div>
 
         {/* ── Change password ── */}
         <section className="settings-section">

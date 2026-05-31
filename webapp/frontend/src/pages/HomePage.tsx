@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import CategoryCard from '../components/CategoryCard'
 import { fetchRelics, fetchResources, type Relic, type Resource } from '../api/itemsApi'
+import { fetchAllGroupRequests, type GroupRequest } from '../api/groupRequestsApi'
 
 type ItemResult =
   | { kind: 'relic'; data: Relic }
@@ -83,6 +84,98 @@ function topMatches(
   }
 
   return [...startsWith, ...contains].slice(0, limit)
+}
+
+const RELIC_REFINEMENTS = ['Intact', 'Exceptional', 'Flawless', 'Radiant']
+
+function extractBaseName(itemName: string): string {
+  return itemName.replace(/\s*\(\w+\)$/, '').trim()
+}
+
+function isRelic(itemName: string): boolean {
+  return RELIC_REFINEMENTS.some(r => itemName.endsWith(`(${r})`))
+}
+
+function getImage(itemName: string, path: string): string {
+  if (path.startsWith('/relics/')) {
+    const base = extractBaseName(itemName)
+    const match = RELIC_FAN_IMAGES.find(({ key }) => base.toLowerCase().includes(key))
+    return match ? match.src : '/images/relics/LithRelicRadiant.png'
+  }
+  else {
+    const path = `/images/resources/${itemName.replace(/\s/g, '')}.png`
+    // Check if the image exists by trying to load it
+    const img = new Image()
+    img.src = path
+    img.onload = () => path
+    img.onerror = () => '/images/resources/OrokinCell.png'
+    return path
+  }
+}
+
+interface GrRow {
+  baseName: string
+  count: number
+  path: string
+}
+
+function ActiveGroupRequestsTable() {
+  const [rows, setRows] = useState<GrRow[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchAllGroupRequests()
+      .then(all => {
+        const counts = new Map<string, number>()
+        for (const r of all) {
+          const base = extractBaseName(r.itemName)
+          counts.set(base, (counts.get(base) ?? 0) + 1)
+        }
+        const sorted = [...counts.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([baseName, count]): GrRow => ({
+            baseName,
+            count,
+            path: isRelic(all.find(r => extractBaseName(r.itemName) === baseName)!.itemName)
+              ? `/relics/${encodeURIComponent(baseName)}`
+              : `/resources/${encodeURIComponent(baseName)}`,
+          }))
+        setRows(sorted)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <p className="gr-notice">Loading group requests…</p>
+  if (rows.length === 0) return <p className="gr-notice">No active group requests.</p>
+
+  return (
+    <div className="gr-summary">
+      <h2 className="gr-summary__title">Active Group Requests</h2>
+      <table className="gr-summary__table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Item</th>
+            <th>Requests</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(row => (
+            <tr key={row.baseName}>
+              <td>
+                <img src={getImage(row.baseName, row.path)} alt={row.baseName} className="gr-item__img" />
+              </td>
+              <td>{row.baseName}</td>
+              <td className="gr-summary__count">{row.count}</td>
+              <td style={{ textAlign: 'center' }}><Link to={row.path} className="gr-summary__link">View →</Link></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 export default function HomePage() {
@@ -169,6 +262,8 @@ export default function HomePage() {
           />
         ))}
       </main>
+
+      <ActiveGroupRequestsTable />
     </div>
   )
 }

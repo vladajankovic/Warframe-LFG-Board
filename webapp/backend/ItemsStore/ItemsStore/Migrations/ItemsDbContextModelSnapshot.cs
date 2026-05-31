@@ -16,6 +16,7 @@ namespace ItemsStore.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("ItemsStoreSchema")
                 .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -52,7 +53,7 @@ namespace ItemsStore.Migrations
                     b.HasIndex("RelicName")
                         .IsUnique();
 
-                    b.ToTable("Relics");
+                    b.ToTable("Relics", "ItemsStoreSchema");
                 });
 
             modelBuilder.Entity("ItemsStore.Database.Entity.ResourceEntity", b =>
@@ -94,7 +95,7 @@ namespace ItemsStore.Migrations
                     b.HasIndex("ResourceName")
                         .IsUnique();
 
-                    b.ToTable("Resources");
+                    b.ToTable("Resources", "ItemsStoreSchema");
                 });
 #pragma warning restore 612, 618
         }

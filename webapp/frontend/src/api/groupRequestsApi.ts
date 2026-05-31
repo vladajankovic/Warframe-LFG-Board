@@ -14,6 +14,12 @@ export interface GroupRequestDTO {
   itemName: string
 }
 
+export async function fetchAllGroupRequests(): Promise<GroupRequest[]> {
+  const res = await fetch(`${BASE_URL}`)
+  if (!res.ok) throw new Error(await parseApiError(res))
+  return res.json() as Promise<GroupRequest[]>
+}
+
 export async function fetchGroupRequestsByItem(itemName: string): Promise<GroupRequest[]> {
   const res = await fetch(`${BASE_URL}/item/${encodeURIComponent(itemName)}`)
   if (res.status === 404) return []

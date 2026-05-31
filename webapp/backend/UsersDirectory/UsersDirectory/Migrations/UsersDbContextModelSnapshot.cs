@@ -17,6 +17,7 @@ namespace UsersDirectory.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("UsersDirectorySchema")
                 .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -68,7 +69,7 @@ namespace UsersDirectory.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", "UsersDirectorySchema");
                 });
 #pragma warning restore 612, 618
         }

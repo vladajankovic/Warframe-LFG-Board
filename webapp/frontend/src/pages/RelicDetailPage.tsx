@@ -40,6 +40,7 @@ function GroupRequestSection({ itemName, relicType }: { itemName: string; relicT
   const [ownRequest, setOwnRequest] = useState<{ itemName: string } | null>(null)
   const [loadingList, setLoadingList] = useState(true)
   const [acting, setActing] = useState(false)
+  const [contactedIndex, setContactedIndex] = useState<number | null>(null)
 
   async function load(tab: GrTab) {
     setLoadingList(true)
@@ -146,18 +147,43 @@ function GroupRequestSection({ itemName, relicType }: { itemName: string; relicT
         <>
           <div className="gr-divider" />
           <ul className="gr-list">
-            {otherRequests.map((r, i) => (
-              <li key={i} className="gr-item">
-                <img
-                  className="gr-item__img"
-                  src={relicImgSrc(relicType, extractRefinement(r.itemName))}
-                  alt=""
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                />
-                <span className="gr-item__name">{r.inGameName}</span>
-                <span className="gr-item__refinement">{extractRefinement(r.itemName)}</span>
-              </li>
-            ))}
+            {otherRequests.map((r, i) => {
+              const isContacted = contactedIndex === i
+              const refinement = extractRefinement(r.itemName)
+              const contactMsg = `/w ${r.inGameName} Hi, I want to join your group for [${itemName} Relic] ${refinement}`
+              return (
+                <li key={i} className="gr-item">
+                  {isContacted ? (
+                    <input
+                      className="gr-contact-input"
+                      type="text"
+                      defaultValue={contactMsg}
+                      readOnly
+                      autoFocus
+                      onFocus={e => e.currentTarget.select()}
+                    />
+                  ) : (
+                    <>
+                      <img
+                        className="gr-item__img"
+                        src={relicImgSrc(relicType, refinement)}
+                        alt=""
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <span className="gr-item__name">{r.inGameName}</span>
+                      <span className="gr-item__refinement">{refinement}</span>
+                    </>
+                  )}
+                  <button
+                    className={`gr-btn gr-btn--inline${isContacted ? ' gr-btn--close' : ' gr-btn--contact'}`}
+                    onClick={() => setContactedIndex(isContacted ? null : i)}
+                    type="button"
+                  >
+                    {isContacted ? 'Close' : 'Contact'}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </>
       ) : !ownRequest ? (
@@ -199,7 +225,6 @@ export default function RelicDetailPage() {
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <h1 className="detail-card__name">{relic.name}</h1>
-            <p className="detail-card__sub">{relic.relicType} · {relic.relicCode}</p>
           </div>
 
           <GroupRequestSection itemName={relic.name} relicType={relic.relicType} />

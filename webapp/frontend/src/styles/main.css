@@ -15,6 +15,7 @@
   --text:      #e8eaf0;
   --text-muted:#8b92a8;
   --danger:    #e05c5c;
+  --contact:   #1dd80c;
   --radius:    8px;
   --font:      'Segoe UI', system-ui, sans-serif;
 }
@@ -186,8 +187,10 @@ body {
 
 .search-bar {
   width: 100%;
-  padding: 0.65rem 1rem;
-  background: var(--surface-2);
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  background: var(--surface-2)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Ccircle cx='8.5' cy='8.5' r='5.5' stroke='%23888' stroke-width='1.5'/%3E%3Cline x1='13' y1='13' x2='17' y2='17' stroke='%23888' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat 0.7rem center / 1rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
@@ -502,9 +505,9 @@ body {
 }
 
 .filter-btn--active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #000;
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+  border-width: 2px;
   font-weight: 600;
 }
 
@@ -1246,6 +1249,45 @@ body {
   margin-top: -1.25rem;
 }
 
+.settings-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: rgba(30, 36, 48, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: calc(var(--radius) * 1.5);
+  padding: 1rem 1.25rem;
+  margin-top: -1rem;
+}
+
+.settings-info__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.settings-info__label {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.settings-info__value {
+  color: var(--text);
+  text-align: right;
+  word-break: break-all;
+}
+
+.settings-info__empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .settings-section {
   background: rgba(30, 36, 48, 0.75);
   border: 1px solid rgba(255,255,255,0.08);
@@ -1685,6 +1727,7 @@ body {
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
+  min-height: 5rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1792,6 +1835,104 @@ body {
   background: rgba(224, 92, 92, 0.15);
   color: var(--danger);
   border: 1px solid rgba(224, 92, 92, 0.35);
+}
+
+.gr-btn--contact {
+  background: rgba(129, 224, 92, 0.15);
+  color: var(--contact);
+  border: 1px solid rgba(29, 216, 12, 0.35);
+}
+
+.gr-btn--close {
+  background: rgba(224, 92, 92, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(224, 92, 92, 0.35);
+}
+
+.gr-contact-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  font-family: monospace;
+  min-width: 0;
+}
+
+/* ── Active Group Requests summary table (HomePage) ─────── */
+.gr-summary {
+  width: 100%;
+  max-width: 640px;
+  background: rgba(13, 15, 20, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  padding: 1.5rem 2rem;
+}
+
+.gr-summary__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1rem;
+}
+
+.gr-summary__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.gr-summary__table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.gr-summary__table th {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.gr-summary__table td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.gr-summary__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.gr-summary__table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gr-summary__count {
+  color: var(--accent);
+  font-weight: 700;
+  text-align: center;
+  width: 4rem;
+}
+
+.gr-summary__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.gr-summary__link:hover {
+  text-decoration: underline;
 }
 
 /* ── My Requests page list ───────────────────────────────── */

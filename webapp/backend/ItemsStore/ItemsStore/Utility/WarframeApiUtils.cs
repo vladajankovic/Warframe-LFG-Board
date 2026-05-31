@@ -20,9 +20,9 @@ namespace ItemsStore.Utility
             return allItems ?? [];
         }
 
-        public async Task<List<ItemDTO>> GetAllRelics()
+        public async Task<List<RelicDTO>> GetAllRelics()
         {
-            var allItems = await _httpClient.GetFromJsonAsync<List<ItemDTO>>(baseUrl);
+            var allItems = await _httpClient.GetFromJsonAsync<List<RelicDTO>>(baseUrl);
             if (allItems == null) return [];
             var relics = allItems.Where(item => item.Type == "Relic" && item.Name.EndsWith("Intact")).ToList();
             return relics;
