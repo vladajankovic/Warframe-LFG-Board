@@ -1,4 +1,6 @@
-﻿namespace UsersDirectory.Database.Entities
+﻿using UsersDirectory.Enums;
+
+namespace UsersDirectory.Database.Entities
 {
     public class UserEntity
     {
@@ -19,5 +21,9 @@
         public string VerificationCode { get; set; }
 
         public bool IsVerified { get; set; } = false;
+
+        public SubscriptionStatus SubscriptionStatus { get; set; } = SubscriptionStatus.Inactive;
+
+        public DateTime? SubscriptionExpiryDate { get; set; } = null;
     }
 }

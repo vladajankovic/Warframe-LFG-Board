@@ -203,5 +203,84 @@ namespace UsersDirectory.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("user/me/subscription")]
+        [Authorize]
+        public async Task<IActionResult> GetSubscription()
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            try
+            {
+                var result = await _userService.GetSubscription(email!);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to get subscription for user {email}!");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("user/me/subscription/activate")]
+        [Authorize]
+        public async Task<IActionResult> ActivateSubscription()
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            try
+            {
+                var result = await _userService.ActivateSubscription(email!);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to activate subscription for user {email}!");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("user/me/subscription/cancel")]
+        [Authorize]
+        public async Task<IActionResult> CancelSubscription()
+        {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+
+            try
+            {
+                var result = await _userService.CancelSubscription(email!);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to cancel subscription for user {email}!");
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

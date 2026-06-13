@@ -18,6 +18,7 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
   const [hasOwn, setHasOwn] = useState(false)
   const [loadingList, setLoadingList] = useState(true)
   const [acting, setActing] = useState(false)
+  const [contactedIndex, setContactedIndex] = useState<number | null>(null)
 
   async function load() {
     setLoadingList(true)
@@ -102,17 +103,41 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
         <>
           <div className="gr-divider" />
           <ul className="gr-list">
-            {otherRequests.map((r, i) => (
-              <li key={i} className="gr-item">
-                <img
-                  className="gr-item__img"
-                  src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
-                  alt=""
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                />
-                <span className="gr-item__name">{r.inGameName}</span>
-              </li>
-            ))}
+            {otherRequests.map((r, i) => {
+              const isContacted = contactedIndex === i
+              const contactMsg = `/w ${r.inGameName} Hi, I want to join your group for [${itemName}] (WarframeLFG)`
+              return (
+                <li key={i} className="gr-item">
+                  { isContacted ? (
+                    <input
+                      className="gr-contact-input"
+                      type="text"
+                      defaultValue={contactMsg}
+                      readOnly
+                      autoFocus
+                      onFocus={e => e.currentTarget.select()}
+                    />
+                  ) : (
+                    <>
+                      <img
+                        className="gr-item__img"
+                        src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
+                        alt=""
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
+                      <span className="gr-item__name">{r.inGameName}</span>
+                    </>
+                  ) }
+                  <button
+                    className={`gr-btn gr-btn--inline${isContacted ? ' gr-btn--close' : ' gr-btn--contact'}`}
+                    onClick={() => setContactedIndex(isContacted ? null : i)}
+                    type="button"
+                  >
+                    {isContacted ? 'Close' : 'Contact'}
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </>
       ) : !hasOwn ? (

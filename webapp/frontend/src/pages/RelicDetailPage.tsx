@@ -150,7 +150,7 @@ function GroupRequestSection({ itemName, relicType }: { itemName: string; relicT
             {otherRequests.map((r, i) => {
               const isContacted = contactedIndex === i
               const refinement = extractRefinement(r.itemName)
-              const contactMsg = `/w ${r.inGameName} Hi, I want to join your group for [${itemName} Relic] ${refinement}`
+              const contactMsg = `/w ${r.inGameName} Hi, I want to join your group for [${itemName} Relic] ${refinement} (WarframeLFG)`
               return (
                 <li key={i} className="gr-item">
                   {isContacted ? (

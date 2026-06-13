@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using UsersDirectory.Database.Entities;
+using UsersDirectory.Enums;
 
 namespace UsersDirectory.Database
 {
@@ -21,6 +22,10 @@ namespace UsersDirectory.Database
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("UsersDirectorySchema");
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            modelBuilder.Entity<UserEntity>()
+                .Property(u => u.SubscriptionStatus)
+                .HasConversion<string>();
         }
     }
 }

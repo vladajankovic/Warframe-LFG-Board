@@ -1288,6 +1288,28 @@ body {
   font-style: italic;
 }
 
+.settings-subscription-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.settings-subscription-badge--active {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.settings-subscription-badge--inactive {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--text-muted);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
 .settings-section {
   background: rgba(30, 36, 48, 0.75);
   border: 1px solid rgba(255,255,255,0.08);

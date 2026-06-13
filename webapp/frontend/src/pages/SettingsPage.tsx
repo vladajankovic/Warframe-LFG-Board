@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changePassword, deleteOwnAccount, updateInGameName } from '../api/usersApi'
+import { changePassword, deleteOwnAccount, updateInGameName, activateSubscription, cancelSubscription } from '../api/usersApi'
 import { notifyError, notifySuccess } from '../api/apiUtils'
 import { DeleteModal } from '../components/DeleteModal'
 
@@ -8,6 +8,15 @@ export default function SettingsPage() {
   const email = localStorage.getItem('user_email') ?? ''
   const [currentIgn, setCurrentIgn] = useState(localStorage.getItem('user_ign') ?? '')
   const navigate = useNavigate()
+
+  // ── Subscription ────────────────────────────────────────
+  const [subscriptionStatus, setSubscriptionStatus] = useState(
+    (localStorage.getItem('user_subscription_status') ?? 'Inactive') as 'Active' | 'Inactive'
+  )
+  const [subscriptionExpiry, setSubscriptionExpiry] = useState(
+    localStorage.getItem('user_subscription_expiry') ?? ''
+  )
+  const [subLoading, setSubLoading] = useState(false)
 
   // ── Change password ─────────────────────────────────────
   const [oldPassword, setOldPassword] = useState('')
@@ -59,11 +68,45 @@ export default function SettingsPage() {
   // ── Delete account ──────────────────────────────────────
   const [showDelete, setShowDelete] = useState(false)
 
+  async function handleActivateSubscription() {
+    setSubLoading(true)
+    try {
+      const info = await activateSubscription()
+      setSubscriptionStatus(info.subscriptionStatus)
+      setSubscriptionExpiry(info.subscriptionExpiryDate ?? '')
+      localStorage.setItem('user_subscription_status', info.subscriptionStatus)
+      localStorage.setItem('user_subscription_expiry', info.subscriptionExpiryDate ?? '')
+      notifySuccess('Subscription activated successfully.')
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : 'Failed to activate subscription.')
+    } finally {
+      setSubLoading(false)
+    }
+  }
+
+  async function handleCancelSubscription() {
+    setSubLoading(true)
+    try {
+      const info = await cancelSubscription()
+      setSubscriptionStatus(info.subscriptionStatus)
+      setSubscriptionExpiry(info.subscriptionExpiryDate ?? '')
+      localStorage.setItem('user_subscription_status', info.subscriptionStatus)
+      localStorage.setItem('user_subscription_expiry', info.subscriptionExpiryDate ?? '')
+      notifySuccess('Subscription cancelled.')
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : 'Failed to cancel subscription.')
+    } finally {
+      setSubLoading(false)
+    }
+  }
+
   async function handleDeleteAccount(password?: string) {
     await deleteOwnAccount(email, password!)
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_email')
     localStorage.removeItem('user_role')
+    localStorage.removeItem('user_subscription_status')
+    localStorage.removeItem('user_subscription_expiry')
     window.dispatchEvent(new Event('user_auth_changed'))
     navigate('/')
   }
@@ -160,6 +203,48 @@ export default function SettingsPage() {
               {ignSaving ? 'Saving…' : 'Update In-Game Name'}
             </button>
           </form>
+        </section>
+
+        {/* ── Subscription ── */}
+        <section className="settings-section">
+          <h2 className="settings-section__title">Subscription</h2>
+          <div className="settings-info">
+            <div className="settings-info__row">
+              <span className="settings-info__label">Status</span>
+              <span className={`settings-subscription-badge settings-subscription-badge--${subscriptionStatus.toLowerCase()}`}>
+                {subscriptionStatus}
+              </span>
+            </div>
+            {subscriptionExpiry && (
+              <div className="settings-info__row">
+                <span className="settings-info__label">
+                  {subscriptionStatus === 'Active' ? 'Renews on' : 'Expired on'}
+                </span>
+                <span className="settings-info__value">
+                  {new Date(subscriptionExpiry).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+          </div>
+          {subscriptionStatus === 'Inactive' ? (
+            <button
+              className="settings-btn settings-btn--save"
+              onClick={handleActivateSubscription}
+              disabled={subLoading}
+              type="button"
+            >
+              {subLoading ? 'Activating…' : 'Activate Subscription'}
+            </button>
+          ) : (
+            <button
+              className="settings-btn settings-btn--delete"
+              onClick={handleCancelSubscription}
+              disabled={subLoading}
+              type="button"
+            >
+              {subLoading ? 'Cancelling…' : 'Cancel Subscription'}
+            </button>
+          )}
         </section>
 
         {/* ── Danger zone ── */}

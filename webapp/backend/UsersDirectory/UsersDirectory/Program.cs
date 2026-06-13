@@ -34,6 +34,7 @@ namespace UsersDirectory
 
             builder.Services.AddScoped<IUsersService, UserService>();
             builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
+            builder.Services.AddHostedService<SubscriptionRenewalService>();
 
             builder.Services.AddTransient<IValidator<AddUserCommand>, AddUserCommandValidator>();
             builder.Services.AddTransient<IValidator<UpdateUserCommand>, UpdateUserCommandValidator>();

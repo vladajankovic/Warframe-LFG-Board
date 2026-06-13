@@ -90,6 +90,13 @@ export interface LoginResponse {
   email: string
   role: string
   inGameName: string
+  subscriptionStatus: 'Active' | 'Inactive'
+  subscriptionExpiryDate: string | null
+}
+
+export interface SubscriptionInfo {
+  subscriptionStatus: 'Active' | 'Inactive'
+  subscriptionExpiryDate: string | null
 }
 
 export function getAuthToken(): string | null {
@@ -113,4 +120,28 @@ export async function register(credentials: AuthCredentials): Promise<void> {
     body: JSON.stringify(credentials),
   })
   if (!res.ok) throw new Error(await parseApiError(res, 'Registration failed.'))
+}
+
+export async function getSubscription(): Promise<SubscriptionInfo> {
+  const res = await fetch(`${BASE_URL}/user/me/subscription`, { headers: authHeaders() })
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to fetch subscription.'))
+  return res.json() as Promise<SubscriptionInfo>
+}
+
+export async function activateSubscription(): Promise<SubscriptionInfo> {
+  const res = await fetch(`${BASE_URL}/user/me/subscription/activate`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to activate subscription.'))
+  return res.json() as Promise<SubscriptionInfo>
+}
+
+export async function cancelSubscription(): Promise<SubscriptionInfo> {
+  const res = await fetch(`${BASE_URL}/user/me/subscription/cancel`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error(await parseApiError(res, 'Failed to cancel subscription.'))
+  return res.json() as Promise<SubscriptionInfo>
 }

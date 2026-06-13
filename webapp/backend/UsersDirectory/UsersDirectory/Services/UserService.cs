@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using UsersDirectory.Commands;
+using UsersDirectory.Enums;
 using UsersDirectory.Models;
 using UsersDirectory.Repositories;
 
@@ -104,7 +105,7 @@ namespace UsersDirectory.Services
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
-            var token = GenerateJwtToken(foundUser.Id, foundUser.Email, foundUser.Role);
+            var token = GenerateJwtToken(foundUser.Id, foundUser.Email, foundUser.Role, foundUser.SubscriptionStatus);
 
             return new LoginResponse
             {
@@ -113,6 +114,8 @@ namespace UsersDirectory.Services
                 Email = foundUser.Email,
                 Role = foundUser.Role,
                 InGameName = foundUser.InGameName,
+                SubscriptionStatus = foundUser.SubscriptionStatus,
+                SubscriptionExpiryDate = foundUser.SubscriptionExpiryDate,
             };
         }
 
@@ -208,7 +211,7 @@ namespace UsersDirectory.Services
             return await _userRepository.DeleteUser(user.Email);
         }
 
-        private string GenerateJwtToken(string id, string email, string role)
+        private string GenerateJwtToken(string id, string email, string role, SubscriptionStatus subscriptionStatus)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -219,6 +222,7 @@ namespace UsersDirectory.Services
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("subscription_status", subscriptionStatus.ToString()),
             };
 
             var token = new JwtSecurityToken(
@@ -230,6 +234,69 @@ namespace UsersDirectory.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<SubscriptionInfo> ActivateSubscription(string email)
+        {
+            var foundUser = await _userRepository.GetUser(email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{email}' not found");
+            }
+
+            if (foundUser.SubscriptionStatus == SubscriptionStatus.Active)
+            {
+                throw new InvalidOperationException("Subscription is already active.");
+            }
+
+            var expiryDate = DateTime.UtcNow.AddMonths(1);
+            var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Active, expiryDate);
+
+            return new SubscriptionInfo
+            {
+                SubscriptionStatus = updatedEntity.SubscriptionStatus,
+                SubscriptionExpiryDate = updatedEntity.SubscriptionExpiryDate,
+            };
+        }
+
+        public async Task<SubscriptionInfo> CancelSubscription(string email)
+        {
+            var foundUser = await _userRepository.GetUser(email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{email}' not found");
+            }
+
+            if (foundUser.SubscriptionStatus == SubscriptionStatus.Inactive)
+            {
+                throw new InvalidOperationException("Subscription is already inactive.");
+            }
+
+            var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Inactive, foundUser.SubscriptionExpiryDate);
+
+            return new SubscriptionInfo
+            {
+                SubscriptionStatus = updatedEntity.SubscriptionStatus,
+                SubscriptionExpiryDate = updatedEntity.SubscriptionExpiryDate,
+            };
+        }
+
+        public async Task<SubscriptionInfo> GetSubscription(string email)
+        {
+            var foundUser = await _userRepository.GetUser(email);
+
+            if (foundUser == null)
+            {
+                throw new KeyNotFoundException($"User '{email}' not found");
+            }
+
+            return new SubscriptionInfo
+            {
+                SubscriptionStatus = foundUser.SubscriptionStatus,
+                SubscriptionExpiryDate = foundUser.SubscriptionExpiryDate,
+            };
         }
     }
 }

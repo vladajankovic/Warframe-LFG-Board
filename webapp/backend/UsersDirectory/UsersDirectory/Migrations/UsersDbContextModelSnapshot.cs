@@ -59,6 +59,13 @@ namespace UsersDirectory.Migrations
                         .HasColumnType("character varying(50)")
                         .HasDefaultValue("User");
 
+                    b.Property<DateTime?>("SubscriptionExpiryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SubscriptionStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("VerificationCode")
                         .IsRequired()
                         .HasMaxLength(64)

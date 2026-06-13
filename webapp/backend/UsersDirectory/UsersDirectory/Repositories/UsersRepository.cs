@@ -2,6 +2,7 @@
 using UsersDirectory.Commands;
 using UsersDirectory.Database;
 using UsersDirectory.Database.Entities;
+using UsersDirectory.Enums;
 
 namespace UsersDirectory.Repositories
 {
@@ -73,6 +74,19 @@ namespace UsersDirectory.Repositories
 
             userEntity.IsVerified = command.IsVerified;
 
+            userEntity.LastUpdatedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+
+            return userEntity;
+        }
+
+        public async Task<UserEntity> UpdateSubscription(string email, SubscriptionStatus status, DateTime? expiryDate)
+        {
+            var userEntity = await GetUser(email);
+
+            userEntity.SubscriptionStatus = status;
+            userEntity.SubscriptionExpiryDate = expiryDate;
             userEntity.LastUpdatedAt = DateTime.UtcNow;
 
             await _dbContext.SaveChangesAsync();

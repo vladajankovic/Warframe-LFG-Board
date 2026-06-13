@@ -38,6 +38,8 @@ export default function AuthPage() {
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
         localStorage.setItem('user_ign', response.inGameName ?? '')
+        localStorage.setItem('user_subscription_status', response.subscriptionStatus)
+        localStorage.setItem('user_subscription_expiry', response.subscriptionExpiryDate ?? '')
       } else {
         await register(credentials)
         // auto-login after registration
@@ -47,6 +49,8 @@ export default function AuthPage() {
         localStorage.setItem('user_email', response.email)
         localStorage.setItem('user_role', response.role)
         localStorage.setItem('user_ign', response.inGameName ?? '')
+        localStorage.setItem('user_subscription_status', response.subscriptionStatus)
+        localStorage.setItem('user_subscription_expiry', response.subscriptionExpiryDate ?? '')
       }
       window.dispatchEvent(new Event('user_auth_changed'))
       navigate('/')
