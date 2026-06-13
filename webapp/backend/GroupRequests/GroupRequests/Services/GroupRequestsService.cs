@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using GroupRequests.Commands;
+using GroupRequests.Events;
 using GroupRequests.Models;
 using GroupRequests.Repositories;
+using GroupRequests.Services.RabbitMQ;
 
 namespace GroupRequests.Services
 {
@@ -9,11 +11,21 @@ namespace GroupRequests.Services
     {
         private readonly IGroupRequestsRepository _groupRequestsRepository;
         private readonly IMapper _mapper;
-        public GroupRequestsService(IGroupRequestsRepository groupRequestsRepository, IMapper mapper)
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
+        private readonly ILogger<GroupRequestsService> _logger;
+
+        public GroupRequestsService(
+            IGroupRequestsRepository groupRequestsRepository,
+            IMapper mapper,
+            IRabbitMQPublisher rabbitMQPublisher,
+            ILogger<GroupRequestsService> logger)
         {
             _groupRequestsRepository = groupRequestsRepository;
             _mapper = mapper;
+            _rabbitMQPublisher = rabbitMQPublisher;
+            _logger = logger;
         }
+
         public async Task<GroupRequestDTO> CreateGroupRequest(AddGroupRequestCommand command)
         {
             var userGroupRequests = await _groupRequestsRepository.GetGroupRequestsByUserId(command.UserId);
@@ -24,8 +36,26 @@ namespace GroupRequests.Services
             }
 
             var newGroupRequest = await _groupRequestsRepository.CreateGroupRequest(command);
+            var result = _mapper.Map<GroupRequestDTO>(newGroupRequest);
 
-            return _mapper.Map<GroupRequestDTO>(newGroupRequest);
+            // Publish event to RabbitMQ
+            try
+            {
+                var groupRequestCreatedEvent = new GroupRequestCreatedEvent(
+                    command.UserId,
+                    command.ItemName,
+                    command.InGameName);
+                
+                await _rabbitMQPublisher.PublishAsync("group-request-created", groupRequestCreatedEvent);
+                _logger.LogInformation("Published GroupRequestCreatedEvent for user {UserId} and item {ItemName}", command.UserId, command.ItemName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish GroupRequestCreatedEvent for user {UserId} and item {ItemName}", command.UserId, command.ItemName);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
+            return result;
         }
 
         public async Task<bool> DeleteGroupRequest(DeleteGroupRequestCommand command)

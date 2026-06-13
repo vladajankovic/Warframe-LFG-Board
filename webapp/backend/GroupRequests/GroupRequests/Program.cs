@@ -4,11 +4,13 @@ using GroupRequests.Commands;
 using GroupRequests.Database;
 using GroupRequests.Repositories;
 using GroupRequests.Services;
+using GroupRequests.Services.RabbitMQ;
 using GroupRequests.Utility.Mappers;
 using GroupRequests.Validation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
@@ -31,6 +33,24 @@ namespace GroupRequests
             builder.Services.AddScoped<IGroupRequestsRepository, GroupRequestsRepository>();
 
             builder.Services.AddScoped<IGroupRequestsService, GroupRequestsService>();
+
+            // Configure RabbitMQ
+            var rabbitMQHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+            var rabbitMQPort = int.TryParse(builder.Configuration["RabbitMQ:Port"], out var port) ? port : 5672;
+            var rabbitMQUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+            var rabbitMQPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+            var connectionFactory = new ConnectionFactory()
+            {
+                HostName = rabbitMQHost,
+                Port = rabbitMQPort,
+                UserName = rabbitMQUsername,
+                Password = rabbitMQPassword,
+                DispatchConsumersAsync = true
+            };
+
+            builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
+            builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
 
             builder.Services.AddTransient<IValidator<AddGroupRequestCommand>, AddGroupRequestCommandValidator>();
             builder.Services.AddTransient<IValidator<DeleteGroupRequestCommand>, DeleteGroupRequestCommandValidator>();

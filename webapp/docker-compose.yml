@@ -1,0 +1,131 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: warframe-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: kolkoparatolkomuzike
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warframe-network
+
+  # RabbitMQ Broker
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: warframe-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warframe-network
+
+  # UsersDirectory Microservice
+  users-directory:
+    build:
+      context: ./backend/UsersDirectory
+      dockerfile: Dockerfile
+    container_name: warframe-users-directory
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=UsersDirectoryDb;Username=postgres;Password=kolkoparatolkomuzike"
+      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
+      Jwt__Issuer: "WarframeApp"
+      Jwt__Audience: "WarframeApp"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    ports:
+      - "8001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - warframe-network
+
+  # ItemsStore Microservice
+  items-store:
+    build:
+      context: ./backend/ItemsStore
+      dockerfile: Dockerfile
+    container_name: warframe-items-store
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=ItemsStoreDb;Username=postgres;Password=kolkoparatolkomuzike"
+      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
+      Jwt__Issuer: "WarframeApp"
+      Jwt__Audience: "WarframeApp"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    ports:
+      - "8002:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - warframe-network
+
+  # GroupRequests Microservice
+  group-requests:
+    build:
+      context: ./backend/GroupRequests
+      dockerfile: Dockerfile
+    container_name: warframe-group-requests
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=GroupRequestsDb;Username=postgres;Password=kolkoparatolkomuzike"
+      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
+      Jwt__Issuer: "WarframeApp"
+      Jwt__Audience: "WarframeApp"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    ports:
+      - "8003:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - warframe-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  warframe-network:
+    driver: bridge
