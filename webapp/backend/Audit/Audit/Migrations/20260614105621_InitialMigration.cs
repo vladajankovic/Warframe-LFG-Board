@@ -15,7 +15,7 @@ namespace Audit.Migrations
                 name: "AuditLogsSchema");
 
             migrationBuilder.CreateTable(
-                name: "AuditLogEntity",
+                name: "AuditLog",
                 schema: "AuditLogsSchema",
                 columns: table => new
                 {
@@ -28,7 +28,7 @@ namespace Audit.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AuditLogEntity", x => x.Id);
+                    table.PrimaryKey("PK_AuditLog", x => x.Id);
                 });
         }
 
@@ -36,7 +36,7 @@ namespace Audit.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AuditLogEntity",
+                name: "AuditLog",
                 schema: "AuditLogsSchema");
         }
     }

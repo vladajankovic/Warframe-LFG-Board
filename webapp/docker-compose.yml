@@ -8,6 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: kolkoparatolkomuzike
+      POSTGRES_DB: WarframeLFGBoardDb
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -48,16 +49,13 @@ services:
       dockerfile: Dockerfile
     container_name: warframe-users-directory
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=WarframeLFGBoardDb;Username=postgres;Password=kolkoparatolkomuzike"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=UsersDirectoryDb;Username=postgres;Password=kolkoparatolkomuzike"
-      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
-      Jwt__Issuer: "WarframeApp"
-      Jwt__Audience: "WarframeApp"
-      RabbitMQ__Host: "rabbitmq"
-      RabbitMQ__Port: "5672"
-      RabbitMQ__Username: "guest"
-      RabbitMQ__Password: "guest"
     ports:
       - "8001:8080"
     depends_on:
@@ -75,16 +73,13 @@ services:
       dockerfile: Dockerfile
     container_name: warframe-items-store
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=WarframeLFGBoardDb;Username=postgres;Password=kolkoparatolkomuzike"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=ItemsStoreDb;Username=postgres;Password=kolkoparatolkomuzike"
-      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
-      Jwt__Issuer: "WarframeApp"
-      Jwt__Audience: "WarframeApp"
-      RabbitMQ__Host: "rabbitmq"
-      RabbitMQ__Port: "5672"
-      RabbitMQ__Username: "guest"
-      RabbitMQ__Password: "guest"
     ports:
       - "8002:8080"
     depends_on:
@@ -102,16 +97,13 @@ services:
       dockerfile: Dockerfile
     container_name: warframe-group-requests
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=WarframeLFGBoardDb;Username=postgres;Password=kolkoparatolkomuzike"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=GroupRequestsDb;Username=postgres;Password=kolkoparatolkomuzike"
-      Jwt__Key: "Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ"
-      Jwt__Issuer: "WarframeApp"
-      Jwt__Audience: "WarframeApp"
-      RabbitMQ__Host: "rabbitmq"
-      RabbitMQ__Port: "5672"
-      RabbitMQ__Username: "guest"
-      RabbitMQ__Password: "guest"
     ports:
       - "8003:8080"
     depends_on:
@@ -119,6 +111,39 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - warframe-network
+
+  # Audit Microservice
+  audit:
+    build:
+      context: ./backend/Audit
+      dockerfile: Dockerfile
+    container_name: warframe-audit
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=WarframeLFGBoardDb;Username=postgres;Password=kolkoparatolkomuzike"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8004:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - warframe-network
+
+  adminer:
+    image: adminer
+    container_name: adminer_ui
+    restart: always
+    ports:
+      - "8090:8080"
     networks:
       - warframe-network
 

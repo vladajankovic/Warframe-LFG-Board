@@ -22,7 +22,8 @@ namespace Audit
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
             builder.Services.AddDbContext<AuditDbContext>(options =>
-                options.UseNpgsql(connectionString));
+                options.UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "AuditLogsSchema")));
 
             builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AutoMapperProfile)));
             builder.Services.AddScoped<IAuditRepository, AuditRepository>();
@@ -42,7 +43,7 @@ namespace Audit
             };
 
             builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
-            builder.Services.AddScoped<IAuditEventConsumer, AuditEventConsumer>();
+            builder.Services.AddSingleton<IAuditEventConsumer, AuditEventConsumer>();
             builder.Services.AddHostedService<AuditEventConsumerHostedService>();
 
             // JWT Authentication
@@ -69,6 +70,13 @@ namespace Audit
             builder.Services.AddOpenApi();
 
             var app = builder.Build();
+
+            // Apply database migrations on startup
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AuditDbContext>();
+                dbContext.Database.Migrate();
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

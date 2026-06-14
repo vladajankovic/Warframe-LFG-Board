@@ -52,7 +52,7 @@ namespace Audit.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogEntity", "AuditLogsSchema");
+                    b.ToTable("AuditLog", "AuditLogsSchema");
                 });
 #pragma warning restore 612, 618
         }

@@ -63,6 +63,8 @@ namespace Audit.Repository
                 query = query.Where(x => x.User.Equals(user));
             }
 
+            query = query.OrderByDescending(x => x.DateTime);
+
             var result = query.AsNoTracking().ToList();
 
             return _mapper.Map<List<AuditLog>>(result);

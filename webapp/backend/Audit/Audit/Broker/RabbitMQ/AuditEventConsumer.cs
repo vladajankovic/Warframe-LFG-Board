@@ -1,5 +1,6 @@
 using Audit.Commands;
 using Audit.Repository;
+using Microsoft.OpenApi;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -11,13 +12,13 @@ namespace Audit.Broker.RabbitMQ
     {
         private readonly IConnectionFactory _connectionFactory;
         private readonly ILogger<AuditEventConsumer> _logger;
-        private readonly IAuditRepository _auditRepository;
+        private readonly IServiceProvider _serviceProvider;
 
-        public AuditEventConsumer(IConnectionFactory connectionFactory, ILogger<AuditEventConsumer> logger, IAuditRepository auditRepository)
+        public AuditEventConsumer(IConnectionFactory connectionFactory, ILogger<AuditEventConsumer> logger, IServiceProvider serviceProvider)
         {
             _connectionFactory = connectionFactory;
             _logger = logger;
-            _auditRepository = auditRepository;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task StartConsuming(CancellationToken cancellationToken)
@@ -98,6 +99,9 @@ namespace Audit.Broker.RabbitMQ
 
         private async Task ProcessAuditEvent(AuditEventMessage auditEvent)
         {
+            using var scope = _serviceProvider.CreateScope();
+            var auditRepository = scope.ServiceProvider.GetRequiredService<IAuditRepository>();
+
             var command = new CreateAuditLogCommand
             {
                 DateTime = auditEvent.DateTime,
@@ -107,7 +111,7 @@ namespace Audit.Broker.RabbitMQ
                 Details = auditEvent.Details
             };
 
-            await _auditRepository.CreateAuditLog(command);
+            await auditRepository.CreateAuditLog(command);
         }
     }
 }

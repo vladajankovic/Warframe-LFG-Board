@@ -29,7 +29,8 @@ namespace ItemsStore
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
             builder.Services.AddDbContext<ItemsDbContext>(options =>
-                options.UseNpgsql(connectionString));
+                options.UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "ItemsStoreSchema")));
 
             builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AutoMapperProfile)));
             builder.Services.AddScoped<IRelicRepository, RelicRepository>();

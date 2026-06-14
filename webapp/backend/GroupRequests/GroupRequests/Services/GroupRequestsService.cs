@@ -46,6 +46,15 @@ namespace GroupRequests.Services
                     command.InGameName);
                 
                 await _rabbitMQPublisher.PublishAsync("group-request-created", groupRequestCreatedEvent);
+
+                var message = new AuditEventMessage(
+                        "Create",
+                        command.UserId,
+                        $"Group request created for user {command.UserId} and item {command.ItemName}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                
+                
                 _logger.LogInformation("Published GroupRequestCreatedEvent for user {UserId} and item {ItemName}", command.UserId, command.ItemName);
             }
             catch (Exception ex)

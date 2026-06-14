@@ -27,7 +27,8 @@ namespace GroupRequests
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
             builder.Services.AddDbContext<GroupRequestsDbContext>(options =>
-                options.UseNpgsql(connectionString));
+                options.UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "GroupRequestsSchema")));
 
             builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AutoMapperProfile)));
             builder.Services.AddScoped<IGroupRequestsRepository, GroupRequestsRepository>();

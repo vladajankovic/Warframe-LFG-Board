@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Audit.Migrations
 {
     [DbContext(typeof(AuditDbContext))]
-    [Migration("20260613212622_InitialMigration")]
+    [Migration("20260614105621_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -55,7 +55,7 @@ namespace Audit.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogEntity", "AuditLogsSchema");
+                    b.ToTable("AuditLog", "AuditLogsSchema");
                 });
 #pragma warning restore 612, 618
         }

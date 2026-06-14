@@ -1,4 +1,5 @@
 using ItemsStore.Models;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace ItemsStore.Utility
@@ -7,7 +8,7 @@ namespace ItemsStore.Utility
     {
         private readonly HttpClient _httpClient;
         private readonly string baseUrl = "https://api.warframestat.us/items";
-        private const string ResourcePagePath = "../resource_page.html";
+        private const string ResourcePageUrl = "https://wiki.warframe.com/w/Resources";
 
         public WarframeApiUtils(HttpClient httpClient)
         {
@@ -28,12 +29,26 @@ namespace ItemsStore.Utility
             return relics;
         }
 
-        public Task<List<WikiResourceItemDTO>> GetAllResourcesFromWiki()
+        public async Task<List<WikiResourceItemDTO>> GetAllResourcesFromWiki()
         {
-            var htmlPath = Path.GetFullPath(ResourcePagePath);
-            var html = File.ReadAllText(htmlPath);
-            var resources = ParseWikiResources(html);
-            return Task.FromResult(resources);
+            List<WikiResourceItemDTO> resources = new();
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                ResourcePageUrl);
+
+            request.Version = HttpVersion.Version11;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            request.Headers.UserAgent.ParseAdd("curl/8.19.0");
+            request.Headers.Accept.ParseAdd("*/*");
+            var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                resources = ParseWikiResources(content);
+            }
+            
+            return resources;
         }
 
         private static List<WikiResourceItemDTO> ParseWikiResources(string html)

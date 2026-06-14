@@ -2011,3 +2011,58 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── Admin filters (Audit Logs, etc.) ──────────────────────── */
+.admin-gr-filters {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(23, 27, 36, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+}
+
+.admin-filters__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.admin-filters__label .admin-search {
+  margin-top: 0.25rem;
+}
+
+.admin-filters__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .admin-gr-filters {
+    flex-direction: column;
+  }
+
+  .admin-filters__label {
+    flex: 1;
+  }
+
+  .admin-filters__actions {
+    justify-content: stretch;
+  }
+
+  .admin-filters__actions .admin-add-btn {
+    flex: 1;
+  }
+}
+

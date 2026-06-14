@@ -18,8 +18,8 @@ interface AdminTableProps<T> {
   searchPlaceholder?: string
   onAdd?: () => void
   addLabel?: string
-  onEdit: (row: T) => void
-  onDelete: (row: T) => void
+  onEdit?: (row: T) => void
+  onDelete?: (row: T) => void
   getRowKey: (row: T) => string | number
   emptyMessage?: string
 }
@@ -99,7 +99,9 @@ export function AdminTable<T extends object>({
                     )}
                   </th>
                 ))}
-                <th className="admin-table__actions-col">Actions</th>
+                { (onEdit || onDelete) && (
+                  <th className="admin-table__actions-col">Actions</th>
+                ) }
               </tr>
             </thead>
             <tbody>
@@ -117,22 +119,28 @@ export function AdminTable<T extends object>({
                         {col.cell(row)}
                       </td>
                     ))}
-                    <td className="admin-table__actions">
-                      <button
-                        className="admin-action-btn admin-action-btn--edit"
-                        onClick={() => onEdit(row)}
-                        type="button"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="admin-action-btn admin-action-btn--delete"
-                        onClick={() => onDelete(row)}
-                        type="button"
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    { (onEdit || onDelete) && (
+                      <td className="admin-table__actions">
+                        {onEdit && (
+                          <button
+                            className="admin-action-btn admin-action-btn--edit"
+                            onClick={() => onEdit(row)}
+                            type="button"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            className="admin-action-btn admin-action-btn--delete"
+                            onClick={() => onDelete(row)}
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

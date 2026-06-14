@@ -1,3 +1,4 @@
+using UsersDirectory.Broker.RabbitMQ;
 using UsersDirectory.Enums;
 using UsersDirectory.Repositories;
 
@@ -32,6 +33,7 @@ namespace UsersDirectory.Services
             {
                 using var scope = _scopeFactory.CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<IUsersRepository>();
+                var rabbitMQPublisher = scope.ServiceProvider.GetRequiredService<IRabbitMQPublisher>();
 
                 var users = await repository.GetAllUsers();
                 var now = DateTime.UtcNow;
@@ -46,7 +48,22 @@ namespace UsersDirectory.Services
                 {
                     var newExpiry = user.SubscriptionExpiryDate!.Value.AddMonths(1);
                     await repository.UpdateSubscription(user.Email, SubscriptionStatus.Active, newExpiry);
-                    _logger.LogInformation("Renewed subscription for {Email}, new expiry: {Expiry}", user.Email, newExpiry);
+                    try
+                    {
+                        var message = new AuditEventMessage(
+                            "Subscription_Renewed",
+                            user.Id,
+                            $"Subscription renewed for user {user.Id}");
+                        
+                        await rabbitMQPublisher.PublishAsync("audit", message);
+                        _logger.LogInformation("Published AuditEventMessage for user {Id}", user.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to publish AuditEventMessage user {Id}", user.Id);
+                        // Don't rethrow - the group request was created successfully, we just failed to notify
+                    }
+                    _logger.LogInformation("Renewed subscription for {Id}, new expiry: {Expiry}", user.Id, newExpiry);
                 }
 
                 if (toRenew.Count > 0)

@@ -7,15 +7,19 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/v1/directory': {
-        target: 'http://localhost:8081',
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+      },
+      '/v1/itemstore': {
+        target: 'http://localhost:8002',
         changeOrigin: true,
       },
       '/v1/grouprequests': {
-        target: 'http://localhost:8082',
+        target: 'http://localhost:8003',
         changeOrigin: true,
       },
-      '/v1': {
-        target: 'http://localhost:8080',
+      '/v1/audit': {
+        target: 'http://localhost:8004',
         changeOrigin: true,
       },
     },

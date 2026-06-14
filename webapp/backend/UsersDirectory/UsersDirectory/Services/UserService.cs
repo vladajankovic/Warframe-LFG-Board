@@ -55,15 +55,15 @@ namespace UsersDirectory.Services
             {
                 var message = new AuditEventMessage(
                     "Create",
-                    command.Email,
-                    $"User created: {command.Email}");
+                    newUser.Id,
+                    $"User created: { newUser.Id }");
 
                 await _rabbitMQPublisher.PublishAsync("audit", message);
-                _logger.LogInformation("Published AuditEventMessage for user {Email}", command.Email);
+                _logger.LogInformation("Published AuditEventMessage for user {Id}", newUser.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", command.Email);
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Id}", newUser.Id);
                 // Don't rethrow - the group request was created successfully, we just failed to notify
             }
 
@@ -385,7 +385,7 @@ namespace UsersDirectory.Services
             try
             {
                 var message = new AuditEventMessage(
-                    "ActivateSubscription",
+                    "Subsctiption_Activated",
                     email,
                     $"Subscription activated for user {email}");
 
@@ -424,7 +424,7 @@ namespace UsersDirectory.Services
             try
             {
                 var message = new AuditEventMessage(
-                    "CancelSubscription",
+                    "Subscription_Canceled",
                     email,
                     $"Subscription canceled for user {email}");
 

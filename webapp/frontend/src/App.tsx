@@ -19,6 +19,7 @@ import RelicsAdminPage from './pages/RelicsAdminPage'
 import ResourcesAdminPage from './pages/ResourcesAdminPage'
 import UsersAdminPage from './pages/UsersAdminPage'
 import GroupRequestsAdminPage from './pages/GroupRequestsAdminPage'
+import LogsAdminPage from './pages/LogsAdminPage'
 import SettingsPage from './pages/SettingsPage'
 import MyGroupRequestsPage from './pages/MyGroupRequestsPage'
 
@@ -79,6 +80,7 @@ export default function App() {
               <Route path="resources" element={<ResourcesAdminPage />} />
               <Route path="users" element={<UsersAdminPage />} />
               <Route path="group-requests" element={<GroupRequestsAdminPage />} />
+              <Route path="logs" element={<LogsAdminPage />} />
             </Route>
           </Route>
         </Route>

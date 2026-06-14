@@ -39,7 +39,7 @@ const MENU_ITEMS = [
     description: 'Inspect application activity logs.',
     icon: '≡',
     path: '/admin/logs',
-    available: false,
+    available: true,
   },
 ]
 
