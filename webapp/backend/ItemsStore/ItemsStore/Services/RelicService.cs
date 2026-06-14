@@ -4,7 +4,7 @@ using ItemsStore.Database.Entity;
 using ItemsStore.Models;
 using ItemsStore.Repository;
 using ItemsStore.Utility;
-using ItemsStore.Utility.Mappers;
+using ItemsStore.Broker.RabbitMQ;
 
 namespace ItemsStore.Services
 {
@@ -12,14 +12,20 @@ namespace ItemsStore.Services
     {
         private readonly IRelicRepository _repository;
         private readonly IMapper _mapper;
+        private readonly ILogger<RelicService> _logger;
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
 
         public RelicService(
             IRelicRepository repository,
-            IMapper mapper
+            IMapper mapper,
+            ILogger<RelicService> logger,
+            IRabbitMQPublisher rabbitMQPublisher
         )
         {
             _repository = repository;
             _mapper = mapper;
+            _logger = logger;
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
 
         public async Task<Relic> CreateRelic(AddRelicCommand command)
@@ -40,12 +46,49 @@ namespace ItemsStore.Services
 
             var newRelic = await _repository.CreateRelic(command);
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Create",
+                    "Admin",
+                    $"Item created: {command.Name}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for item {ItemName}", command.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", command.Name);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<Relic>(newRelic);
         }
 
         public async Task<bool> DeleteRelic(string name)
         {
-            return await _repository.DeleteRelic(name);
+            var result = await _repository.DeleteRelic(name);
+
+            if (result)
+            {
+                try
+                {
+                    var message = new AuditEventMessage(
+                        "Delete",
+                        "Admin",
+                        $"Item deleted: {name}");
+
+                    await _rabbitMQPublisher.PublishAsync("audit", message);
+                    _logger.LogInformation("Published AuditEventMessage for item {ItemName}", name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", name);
+                    // Don't rethrow - the group request was created successfully, we just failed to notify
+                }
+            }
+
+            return result;
         }
 
         public async Task<List<Relic>> GetAllRelics()
@@ -105,6 +148,22 @@ namespace ItemsStore.Services
             }
 
             var updatedRelic = await _repository.UpdateRelic(command);
+
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Update",
+                    "Admin",
+                    $"Item updated: {command.Name}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for item {ItemName}", command.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", command.Name);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
 
             return _mapper.Map<Relic>(updatedRelic);
         }

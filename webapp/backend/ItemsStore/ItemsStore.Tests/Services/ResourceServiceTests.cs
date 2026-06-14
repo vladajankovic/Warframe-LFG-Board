@@ -1,10 +1,12 @@
 using AutoMapper;
+using ItemsStore.Broker.RabbitMQ;
 using ItemsStore.Commands;
 using ItemsStore.Database.Entity;
 using ItemsStore.Repository;
 using ItemsStore.Services;
 using ItemsStore.Utility;
 using ItemsStore.Utility.Mappers;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -14,6 +16,8 @@ namespace ItemsStore.Tests.Services
     {
         private readonly Mock<IResourceRepository> _repoMock;
         private readonly IMapper _mapper;
+        private readonly Mock<ILogger<ResourceService>> _loggerMock;
+        private readonly Mock<IRabbitMQPublisher> _brokerMock;
         private readonly ResourceService _service;
 
         public ResourceServiceTests()
@@ -21,7 +25,9 @@ namespace ItemsStore.Tests.Services
             _repoMock = new Mock<IResourceRepository>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
             _mapper = config.CreateMapper();
-            _service = new ResourceService(_repoMock.Object, _mapper);
+            _loggerMock = new Mock<ILogger<ResourceService>>();
+            _brokerMock = new Mock<IRabbitMQPublisher>();
+            _service = new ResourceService(_repoMock.Object, _mapper, _loggerMock.Object, _brokerMock.Object);
         }
 
         private static ResourceEntity MakeEntity(

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ItemsStore.Broker.RabbitMQ;
 using ItemsStore.Commands;
 using ItemsStore.Models;
 using ItemsStore.Repository;
@@ -9,13 +10,20 @@ namespace ItemsStore.Services
     {
         private readonly IResourceRepository _resourceRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<ResourceService> _logger;
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
+
         public ResourceService(
             IResourceRepository resourceRepository,
-            IMapper mapper
+            IMapper mapper,
+            ILogger<ResourceService> logger,
+            IRabbitMQPublisher rabbitMQPublisher
         )
         {
             _resourceRepository = resourceRepository;
             _mapper = mapper;
+            _logger = logger;
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
         public async Task<Resource> CreateResource(AddResourceCommand command)
         {
@@ -28,12 +36,49 @@ namespace ItemsStore.Services
 
             var newResource = await _resourceRepository.CreateResource(command);
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Create",
+                    "Admin",
+                    $"Item created: {command.Name}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for item {ItemName}", command.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", command.Name);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<Resource>(newResource);
         }
 
         public async Task<bool> DeleteResource(string name)
         {
-            return await _resourceRepository.DeleteResource(name);
+            var result = await _resourceRepository.DeleteResource(name);
+
+            if (result)
+            {
+                try
+                {
+                    var message = new AuditEventMessage(
+                        "Delete",
+                        "Admin",
+                        $"Item deleted: {name}");
+
+                    await _rabbitMQPublisher.PublishAsync("audit", message);
+                    _logger.LogInformation("Published AuditEventMessage for item {ItemName}", name);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", name);
+                    // Don't rethrow - the group request was created successfully, we just failed to notify
+                }
+            }
+
+            return result;
         }
 
         public async Task<List<Resource>> GetAllResources()
@@ -64,6 +109,22 @@ namespace ItemsStore.Services
             }
 
             var updatedResource = await _resourceRepository.UpdateResource(command);
+
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Update",
+                    "Admin",
+                    $"Item updated: {command.Name}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for item {ItemName}", command.Name);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage for item {ItemName}", command.Name);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
 
             return _mapper.Map<Resource>(updatedResource);
         }

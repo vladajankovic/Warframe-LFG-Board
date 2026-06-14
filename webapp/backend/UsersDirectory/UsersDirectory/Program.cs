@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
+using UsersDirectory.Broker.RabbitMQ;
 using UsersDirectory.Commands;
 using UsersDirectory.Database;
 using UsersDirectory.Repositories;
@@ -35,6 +37,23 @@ namespace UsersDirectory
             builder.Services.AddScoped<IUsersService, UserService>();
             builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
             builder.Services.AddHostedService<SubscriptionRenewalService>();
+
+            // Configure RabbitMQ
+            var rabbitMQHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+            var rabbitMQPort = int.TryParse(builder.Configuration["RabbitMQ:Port"], out var port) ? port : 5672;
+            var rabbitMQUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+            var rabbitMQPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+            var connectionFactory = new ConnectionFactory()
+            {
+                HostName = rabbitMQHost,
+                Port = rabbitMQPort,
+                UserName = rabbitMQUsername,
+                Password = rabbitMQPassword
+            };
+
+            builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
+            builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
 
             builder.Services.AddTransient<IValidator<AddUserCommand>, AddUserCommandValidator>();
             builder.Services.AddTransient<IValidator<UpdateUserCommand>, UpdateUserCommandValidator>();

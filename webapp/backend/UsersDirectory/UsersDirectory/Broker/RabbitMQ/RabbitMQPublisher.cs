@@ -2,7 +2,7 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
-namespace GroupRequests.Services.RabbitMQ
+namespace UsersDirectory.Broker.RabbitMQ
 {
     public class RabbitMQPublisher : IRabbitMQPublisher
     {

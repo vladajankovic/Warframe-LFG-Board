@@ -1,10 +1,10 @@
 
 using FluentValidation;
+using GroupRequests.Broker.RabbitMQ;
 using GroupRequests.Commands;
 using GroupRequests.Database;
 using GroupRequests.Repositories;
 using GroupRequests.Services;
-using GroupRequests.Services.RabbitMQ;
 using GroupRequests.Utility.Mappers;
 using GroupRequests.Validation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,8 +45,7 @@ namespace GroupRequests
                 HostName = rabbitMQHost,
                 Port = rabbitMQPort,
                 UserName = rabbitMQUsername,
-                Password = rabbitMQPassword,
-                DispatchConsumersAsync = true
+                Password = rabbitMQPassword
             };
 
             builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);

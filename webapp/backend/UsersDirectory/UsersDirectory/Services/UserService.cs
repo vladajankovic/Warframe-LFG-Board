@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UsersDirectory.Broker.RabbitMQ;
 using UsersDirectory.Commands;
 using UsersDirectory.Enums;
 using UsersDirectory.Models;
@@ -17,18 +18,24 @@ namespace UsersDirectory.Services
         private readonly IMapper _mapper;
         private readonly IPasswordHasher<string> _passwordHasher;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<UserService> _logger;
+        private readonly IRabbitMQPublisher _rabbitMQPublisher;
 
         public UserService(
             IUsersRepository usersRepository,
             IMapper mapper,
             IPasswordHasher<string> passwordHasher,
-            IConfiguration configuration
+            IConfiguration configuration,
+            ILogger<UserService> logger,
+            IRabbitMQPublisher rabbitMQPublisher
         )
         {
             _userRepository = usersRepository;
             _mapper = mapper;
             _passwordHasher = passwordHasher;
             _configuration = configuration;
+            _logger = logger;
+            _rabbitMQPublisher = rabbitMQPublisher;
         }
 
         public async Task<User> CreateUser(AddUserCommand command)
@@ -44,12 +51,49 @@ namespace UsersDirectory.Services
 
             var newUser = await _userRepository.CreateUser(command);
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Create",
+                    command.Email,
+                    $"User created: {command.Email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", command.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", command.Email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<User>(newUser);
         }
 
         public async Task<bool> DeleteUser(string email)
         {
-            return await _userRepository.DeleteUser(email);
+            var result = await _userRepository.DeleteUser(email);
+
+            if (result)
+            {
+                try
+                {
+                    var message = new AuditEventMessage(
+                        "Delete",
+                        email,
+                        $"User deleted: {email}");
+
+                    await _rabbitMQPublisher.PublishAsync("audit", message);
+                    _logger.LogInformation("Published AuditEventMessage for user {Email}", email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", email);
+                    // Don't rethrow - the group request was created successfully, we just failed to notify
+                }
+            }
+
+            return result;
         }
 
         public async Task<List<User>> GetAllUsers()
@@ -86,6 +130,22 @@ namespace UsersDirectory.Services
 
             var updatedUser = await _userRepository.UpdateUser(command);
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Update",
+                    command.Email,
+                    $"User updated: {command.Email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", command.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", command.Email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<User>(updatedUser);
         }
 
@@ -106,6 +166,22 @@ namespace UsersDirectory.Services
             }
 
             var token = GenerateJwtToken(foundUser.Id, foundUser.Email, foundUser.Role, foundUser.SubscriptionStatus);
+
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Login",
+                    user.Email,
+                    $"User login: {user.Email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", user.Email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
 
             return new LoginResponse
             {
@@ -166,6 +242,22 @@ namespace UsersDirectory.Services
                 }
             );
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Update",
+                    user.Email,
+                    $"Password change: {user.Email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", user.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", user.Email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<User>(updatedUser);
         }
 
@@ -189,6 +281,22 @@ namespace UsersDirectory.Services
                 }
             );
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "Update",
+                    foundUser.Email,
+                    $"In-game name changed to {command.InGameName}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", foundUser.Email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", foundUser.Email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return _mapper.Map<User>(updatedUser);
         }
 
@@ -201,14 +309,35 @@ namespace UsersDirectory.Services
                 throw new KeyNotFoundException($"User '{user.Email}' not found");
             }
 
-            var result = _passwordHasher.VerifyHashedPassword(string.Empty, foundUser.Password, user.Password);
+            var verificationResult = _passwordHasher.VerifyHashedPassword(string.Empty, foundUser.Password, user.Password);
 
-            if (result != PasswordVerificationResult.Success && result != PasswordVerificationResult.SuccessRehashNeeded)
+            if (verificationResult != PasswordVerificationResult.Success && verificationResult != PasswordVerificationResult.SuccessRehashNeeded)
             {
                 throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
-            return await _userRepository.DeleteUser(user.Email);
+            var result = await _userRepository.DeleteUser(user.Email);
+
+            if (result)
+            {
+                try
+                {
+                    var message = new AuditEventMessage(
+                        "Delete",
+                        user.Email,
+                        $"User deleted: {user.Email}");
+
+                    await _rabbitMQPublisher.PublishAsync("audit", message);
+                    _logger.LogInformation("Published AuditEventMessage for user {Email}", user.Email);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", user.Email);
+                    // Don't rethrow - the group request was created successfully, we just failed to notify
+                }
+            }
+
+            return result;
         }
 
         private string GenerateJwtToken(string id, string email, string role, SubscriptionStatus subscriptionStatus)
@@ -253,6 +382,22 @@ namespace UsersDirectory.Services
             var expiryDate = DateTime.UtcNow.AddMonths(1);
             var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Active, expiryDate);
 
+            try
+            {
+                var message = new AuditEventMessage(
+                    "ActivateSubscription",
+                    email,
+                    $"Subscription activated for user {email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
+
             return new SubscriptionInfo
             {
                 SubscriptionStatus = updatedEntity.SubscriptionStatus,
@@ -275,6 +420,22 @@ namespace UsersDirectory.Services
             }
 
             var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Inactive, foundUser.SubscriptionExpiryDate);
+
+            try
+            {
+                var message = new AuditEventMessage(
+                    "CancelSubscription",
+                    email,
+                    $"Subscription canceled for user {email}");
+
+                await _rabbitMQPublisher.PublishAsync("audit", message);
+                _logger.LogInformation("Published AuditEventMessage for user {Email}", email);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to publish AuditEventMessage user {Email}", email);
+                // Don't rethrow - the group request was created successfully, we just failed to notify
+            }
 
             return new SubscriptionInfo
             {

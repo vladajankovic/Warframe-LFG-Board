@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
+using GroupRequests.Broker.Events;
+using GroupRequests.Broker.RabbitMQ;
 using GroupRequests.Commands;
-using GroupRequests.Events;
 using GroupRequests.Models;
 using GroupRequests.Repositories;
-using GroupRequests.Services.RabbitMQ;
 
 namespace GroupRequests.Services
 {
@@ -38,7 +38,6 @@ namespace GroupRequests.Services
             var newGroupRequest = await _groupRequestsRepository.CreateGroupRequest(command);
             var result = _mapper.Map<GroupRequestDTO>(newGroupRequest);
 
-            // Publish event to RabbitMQ
             try
             {
                 var groupRequestCreatedEvent = new GroupRequestCreatedEvent(
@@ -60,7 +59,28 @@ namespace GroupRequests.Services
 
         public async Task<bool> DeleteGroupRequest(DeleteGroupRequestCommand command)
         {
-            return await _groupRequestsRepository.DeleteGroupRequest(command);
+            var result = await _groupRequestsRepository.DeleteGroupRequest(command);
+            
+            if (result)
+            {
+                try
+                {
+                    var message = new AuditEventMessage(
+                        "Delete",
+                        command.UserId,
+                        $"Group request deleted for user {command.UserId} and item {command.ItemName}");
+
+                    await _rabbitMQPublisher.PublishAsync("audit", message);
+                    _logger.LogInformation("Published AuditEventMessage for user {UserId} and item {ItemName}", command.UserId, command.ItemName);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to publish AuditEventMessage for user {UserId} and item {ItemName}", command.UserId, command.ItemName);
+                    // Don't rethrow - the group request was created successfully, we just failed to notify
+                }
+            }
+
+            return result;
         }
 
         public async Task<List<GroupRequestDTO>> GetAllGroupRequests()

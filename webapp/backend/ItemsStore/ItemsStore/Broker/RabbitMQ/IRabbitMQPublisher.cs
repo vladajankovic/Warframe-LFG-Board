@@ -1,4 +1,4 @@
-namespace GroupRequests.Services.RabbitMQ
+namespace ItemsStore.Broker.RabbitMQ
 {
     public interface IRabbitMQPublisher
     {

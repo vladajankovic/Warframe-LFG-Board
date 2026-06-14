@@ -1,10 +1,11 @@
 using AutoMapper;
+using ItemsStore.Broker.RabbitMQ;
 using ItemsStore.Commands;
 using ItemsStore.Database.Entity;
-using ItemsStore.Models;
 using ItemsStore.Repository;
 using ItemsStore.Services;
 using ItemsStore.Utility.Mappers;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -14,6 +15,8 @@ namespace ItemsStore.Tests.Services
     {
         private readonly Mock<IRelicRepository> _repoMock;
         private readonly IMapper _mapper;
+        private readonly Mock<ILogger<RelicService>> _loggerMock;
+        private readonly Mock<IRabbitMQPublisher> _brokerMock;
         private readonly RelicService _service;
 
         public RelicServiceTests()
@@ -21,7 +24,9 @@ namespace ItemsStore.Tests.Services
             _repoMock = new Mock<IRelicRepository>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
             _mapper = config.CreateMapper();
-            _service = new RelicService(_repoMock.Object, _mapper);
+            _loggerMock = new Mock<ILogger<RelicService>>();
+            _brokerMock = new Mock<IRabbitMQPublisher>();
+            _service = new RelicService(_repoMock.Object, _mapper, _loggerMock.Object, _brokerMock.Object);
         }
 
         private static RelicEntity MakeEntity(string name = "Lith A1", RelicType type = RelicType.LITH, string code = "A1") =>

@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using ItemsStore.Commands;
+﻿using ItemsStore.Commands;
 using ItemsStore.Database;
 using ItemsStore.Database.Entity;
-using ItemsStore.Models;
 using ItemsStore.Utility;
 using Microsoft.EntityFrameworkCore;
 

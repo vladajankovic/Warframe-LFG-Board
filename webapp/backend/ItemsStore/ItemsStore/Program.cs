@@ -1,5 +1,6 @@
 
 using FluentValidation;
+using ItemsStore.Broker.RabbitMQ;
 using ItemsStore.Commands;
 using ItemsStore.Database;
 using ItemsStore.Repository;
@@ -11,6 +12,7 @@ using ItemsStore.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Reflection;
 using System.Text;
@@ -35,6 +37,23 @@ namespace ItemsStore
 
             builder.Services.AddScoped<IRelicService, RelicService>();
             builder.Services.AddScoped<IResourceService, ResourceService>();
+
+            // Configure RabbitMQ
+            var rabbitMQHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+            var rabbitMQPort = int.TryParse(builder.Configuration["RabbitMQ:Port"], out var port) ? port : 5672;
+            var rabbitMQUsername = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+            var rabbitMQPassword = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+            var connectionFactory = new ConnectionFactory()
+            {
+                HostName = rabbitMQHost,
+                Port = rabbitMQPort,
+                UserName = rabbitMQUsername,
+                Password = rabbitMQPassword
+            };
+
+            builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
+            builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
 
             builder.Services.AddTransient<IValidator<AddRelicCommand>, AddRelicCommandValidator>();
             builder.Services.AddTransient<IValidator<AddResourceCommand>, AddResourceCommandValidator>();

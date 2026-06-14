@@ -1,11 +1,14 @@
 using AutoMapper;
+using GroupRequests.Broker.RabbitMQ;
 using GroupRequests.Commands;
 using GroupRequests.Database.Entities;
 using GroupRequests.Models;
 using GroupRequests.Repositories;
 using GroupRequests.Services;
 using GroupRequests.Utility.Mappers;
+using Microsoft.Extensions.Logging;
 using Moq;
+using System.ComponentModel.Design;
 using Xunit;
 
 namespace GroupRequests.Tests.Services
@@ -14,6 +17,8 @@ namespace GroupRequests.Tests.Services
     {
         private readonly Mock<IGroupRequestsRepository> _repoMock;
         private readonly IMapper _mapper;
+        private readonly Mock<ILogger<GroupRequestsService>> _loggerMock;
+        private readonly Mock<IRabbitMQPublisher> _brokerMock;
         private readonly GroupRequestsService _service;
 
         public GroupRequestsServiceTests()
@@ -21,7 +26,9 @@ namespace GroupRequests.Tests.Services
             _repoMock = new Mock<IGroupRequestsRepository>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
             _mapper = config.CreateMapper();
-            _service = new GroupRequestsService(_repoMock.Object, _mapper);
+            _loggerMock = new Mock<ILogger<GroupRequestsService>>();
+            _brokerMock = new Mock<IRabbitMQPublisher>();
+            _service = new GroupRequestsService(_repoMock.Object, _mapper, _brokerMock.Object,_loggerMock.Object);
         }
 
         private static GroupRequestEntity MakeEntity(string userId = "user1", string inGameName = "PlayerOne", string itemName = "Forma Blueprint") =>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using UsersDirectory.Database.Entities;
-using UsersDirectory.Enums;
 
 namespace UsersDirectory.Database
 {

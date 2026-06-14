@@ -1,8 +1,11 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
-using AutoMapper;
+using System.ComponentModel.Design;
+using UsersDirectory.Broker.RabbitMQ;
 using UsersDirectory.Commands;
 using UsersDirectory.Database.Entities;
 using UsersDirectory.Repositories;
@@ -14,15 +17,19 @@ namespace UsersDirectory.Tests.Services
     public class UserServiceTests
     {
         private readonly Mock<IUsersRepository> _repositoryMock;
-        private readonly Mock<IPasswordHasher<AddUserCommand>> _hasherMock;
+        private readonly Mock<IPasswordHasher<string>> _hasherMock;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
+        private readonly Mock<ILogger<UserService>> _loggerMock;
+        private readonly Mock<IRabbitMQPublisher> _brokerMock;
         private readonly UserService _sut;
 
         public UserServiceTests()
         {
             _repositoryMock = new Mock<IUsersRepository>();
-            _hasherMock = new Mock<IPasswordHasher<AddUserCommand>>();
+            _hasherMock = new Mock<IPasswordHasher<string>>();
+            _loggerMock = new Mock<ILogger<UserService>>();
+            _brokerMock = new Mock<IRabbitMQPublisher>();
 
             // AutoMapper 14+ requires DI-based configuration
             var services = new ServiceCollection();
@@ -42,7 +49,9 @@ namespace UsersDirectory.Tests.Services
                 _repositoryMock.Object,
                 _mapper,
                 _hasherMock.Object,
-                _configuration
+                _configuration,
+                _loggerMock.Object,
+                _brokerMock.Object
             );
         }
 
@@ -62,7 +71,7 @@ namespace UsersDirectory.Tests.Services
             var entity  = MakeEntity(command.Email, "hashed_plain");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync((UserEntity)null!);
-            _hasherMock.Setup(h => h.HashPassword(command, "plain")).Returns("hashed_plain");
+            _hasherMock.Setup(h => h.HashPassword(string.Empty, "plain")).Returns("hashed_plain");
             _repositoryMock.Setup(r => r.CreateUser(command)).ReturnsAsync(entity);
 
             var result = await _sut.CreateUser(command);
@@ -86,7 +95,7 @@ namespace UsersDirectory.Tests.Services
         {
             var command = new AddUserCommand { Email = "new@test.com", Password = "plain" };
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync((UserEntity)null!);
-            _hasherMock.Setup(h => h.HashPassword(command, "plain")).Returns("hashed_plain");
+            _hasherMock.Setup(h => h.HashPassword(string.Empty, "plain")).Returns("hashed_plain");
             _repositoryMock.Setup(r => r.CreateUser(command)).ReturnsAsync(MakeEntity(command.Email));
 
             await _sut.CreateUser(command);
@@ -182,12 +191,12 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task UpdateUser_ExistingUser_ReturnsUpdatedUser()
         {
-            var command  = new AddUserCommand { Email = "user@test.com", Password = "newpass" };
+            var command  = new UpdateUserCommand { Email = "user@test.com", Password = "newpass" };
             var existing = MakeEntity("user@test.com", "old_hash");
             var updated  = MakeEntity("user@test.com", "new_hash");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(existing);
-            _hasherMock.Setup(h => h.HashPassword(command, "newpass")).Returns("new_hash");
+            _hasherMock.Setup(h => h.HashPassword(string.Empty, "newpass")).Returns("new_hash");
             _repositoryMock.Setup(r => r.UpdateUser(command)).ReturnsAsync(updated);
 
             var result = await _sut.UpdateUser(command);
@@ -200,7 +209,7 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task UpdateUser_UnknownUser_ThrowsKeyNotFoundException()
         {
-            var command = new AddUserCommand { Email = "missing@test.com", Password = "pass" };
+            var command = new UpdateUserCommand { Email = "missing@test.com", Password = "pass" };
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync((UserEntity)null!);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.UpdateUser(command));
@@ -209,11 +218,11 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task UpdateUser_HashesNewPasswordBeforeSaving()
         {
-            var command  = new AddUserCommand { Email = "user@test.com", Password = "newpass" };
+            var command  = new UpdateUserCommand { Email = "user@test.com", Password = "newpass" };
             var existing = MakeEntity("user@test.com");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(existing);
-            _hasherMock.Setup(h => h.HashPassword(command, "newpass")).Returns("new_hash");
+            _hasherMock.Setup(h => h.HashPassword(string.Empty, "newpass")).Returns("new_hash");
             _repositoryMock.Setup(r => r.UpdateUser(command)).ReturnsAsync(existing);
 
             await _sut.UpdateUser(command);
@@ -228,11 +237,11 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task LoginUser_ValidCredentials_ReturnsLoginResponseWithToken()
         {
-            var command = new AddUserCommand { Email = "user@test.com", Password = "plain" };
+            var command = new LoginCommand { Email = "user@test.com", Password = "plain" };
             var entity  = MakeEntity("user@test.com", "hashed", "User");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(entity);
-            _hasherMock.Setup(h => h.VerifyHashedPassword(command, "hashed", "plain"))
+            _hasherMock.Setup(h => h.VerifyHashedPassword(string.Empty, "hashed", "plain"))
                        .Returns(PasswordVerificationResult.Success);
 
             var result = await _sut.LoginUser(command);
@@ -246,11 +255,11 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task LoginUser_SuccessRehashNeeded_ReturnsTokenWithCorrectRole()
         {
-            var command = new AddUserCommand { Email = "user@test.com", Password = "plain" };
+            var command = new LoginCommand { Email = "user@test.com", Password = "plain" };
             var entity  = MakeEntity("user@test.com", "old_hash", "Admin");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(entity);
-            _hasherMock.Setup(h => h.VerifyHashedPassword(command, "old_hash", "plain"))
+            _hasherMock.Setup(h => h.VerifyHashedPassword(string.Empty, "old_hash", "plain"))
                        .Returns(PasswordVerificationResult.SuccessRehashNeeded);
 
             var result = await _sut.LoginUser(command);
@@ -262,7 +271,7 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task LoginUser_UnknownEmail_ThrowsKeyNotFoundException()
         {
-            var command = new AddUserCommand { Email = "missing@test.com", Password = "plain" };
+            var command = new LoginCommand { Email = "missing@test.com", Password = "plain" };
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync((UserEntity)null!);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.LoginUser(command));
@@ -271,11 +280,11 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task LoginUser_WrongPassword_ThrowsUnauthorizedAccessException()
         {
-            var command = new AddUserCommand { Email = "user@test.com", Password = "wrong" };
+            var command = new LoginCommand { Email = "user@test.com", Password = "wrong" };
             var entity  = MakeEntity("user@test.com", "hashed");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(entity);
-            _hasherMock.Setup(h => h.VerifyHashedPassword(command, "hashed", "wrong"))
+            _hasherMock.Setup(h => h.VerifyHashedPassword(string.Empty, "hashed", "wrong"))
                        .Returns(PasswordVerificationResult.Failed);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _sut.LoginUser(command));
@@ -284,11 +293,11 @@ namespace UsersDirectory.Tests.Services
         [Fact]
         public async Task LoginUser_ValidCredentials_TokenContainsEmailAndRoleClaims()
         {
-            var command = new AddUserCommand { Email = "admin@test.com", Password = "plain" };
+            var command = new LoginCommand { Email = "admin@test.com", Password = "plain" };
             var entity  = MakeEntity("admin@test.com", "hashed", "Admin");
 
             _repositoryMock.Setup(r => r.GetUser(command.Email)).ReturnsAsync(entity);
-            _hasherMock.Setup(h => h.VerifyHashedPassword(command, "hashed", "plain"))
+            _hasherMock.Setup(h => h.VerifyHashedPassword(string.Empty, "hashed", "plain"))
                        .Returns(PasswordVerificationResult.Success);
 
             var result = await _sut.LoginUser(command);
