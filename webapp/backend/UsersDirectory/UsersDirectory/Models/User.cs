@@ -1,4 +1,5 @@
-﻿using UsersDirectory.Enums;
+﻿using System.Text.Json.Serialization;
+using UsersDirectory.Enums;
 
 namespace UsersDirectory.Models
 {
@@ -10,6 +11,7 @@ namespace UsersDirectory.Models
         public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
         public bool IsVerified { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public SubscriptionStatus SubscriptionStatus { get; set; }
         public DateTime? SubscriptionExpiryDate { get; set; }
     }
