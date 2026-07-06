@@ -72,6 +72,7 @@ namespace UsersDirectory.Services
 
         public async Task<bool> DeleteUser(string email)
         {
+            var user = await _userRepository.GetUser(email);
             var result = await _userRepository.DeleteUser(email);
 
             if (result)
@@ -80,11 +81,11 @@ namespace UsersDirectory.Services
                 {
                     var message = new AuditEventMessage(
                         "Delete",
-                        email,
-                        $"User deleted: {email}");
+                        user.Id,
+                        $"User deleted: {user.Id}");
 
                     await _rabbitMQPublisher.PublishAsync("audit", message);
-                    _logger.LogInformation("Published AuditEventMessage for user {Email}", email);
+                    _logger.LogInformation("Published AuditEventMessage for user {Email}", user.Id);
                 }
                 catch (Exception ex)
                 {

@@ -2,10 +2,10 @@ namespace Audit.Broker.RabbitMQ
 {
     public class AuditEventConsumerHostedService : BackgroundService
     {
-        private readonly IAuditEventConsumer _consumer;
+        private readonly IBrokerEventConsumer _consumer;
         private readonly ILogger<AuditEventConsumerHostedService> _logger;
 
-        public AuditEventConsumerHostedService(IAuditEventConsumer consumer, ILogger<AuditEventConsumerHostedService> logger)
+        public AuditEventConsumerHostedService(IBrokerEventConsumer consumer, ILogger<AuditEventConsumerHostedService> logger)
         {
             _consumer = consumer;
             _logger = logger;

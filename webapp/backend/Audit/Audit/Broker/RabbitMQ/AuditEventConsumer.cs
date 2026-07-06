@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Audit.Broker.RabbitMQ
 {
-    public class AuditEventConsumer : IAuditEventConsumer
+    public class AuditEventConsumer : IBrokerEventConsumer
     {
         private readonly IConnectionFactory _connectionFactory;
         private readonly ILogger<AuditEventConsumer> _logger;

@@ -43,7 +43,7 @@ namespace Audit
             };
 
             builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
-            builder.Services.AddSingleton<IAuditEventConsumer, AuditEventConsumer>();
+            builder.Services.AddSingleton<IBrokerEventConsumer, AuditEventConsumer>();
             builder.Services.AddHostedService<AuditEventConsumerHostedService>();
 
             // JWT Authentication

@@ -1,6 +1,6 @@
 namespace Audit.Broker.RabbitMQ
 {
-    public interface IAuditEventConsumer
+    public interface IBrokerEventConsumer
     {
         Task StartConsuming(CancellationToken cancellationToken);
     }
