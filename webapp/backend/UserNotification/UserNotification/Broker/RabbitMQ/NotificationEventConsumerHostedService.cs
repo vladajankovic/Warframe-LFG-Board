@@ -1,4 +1,4 @@
-namespace Audit.Broker.RabbitMQ
+namespace UserNotification.Broker.RabbitMQ
 {
     public class NotificationEventConsumerHostedService : BackgroundService
     {

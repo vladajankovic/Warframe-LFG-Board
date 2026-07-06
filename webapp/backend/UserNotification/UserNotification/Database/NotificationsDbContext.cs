@@ -8,6 +8,7 @@ namespace UserNotification.Database
     {
         public virtual DbSet<UserFavoriteEntity> Favorites { get; set; }
         public virtual DbSet<UserNotificationEntity> Notifications { get; set; }
+        public virtual DbSet<UserNotificationDismissalEntity> NotificationDismissals { get; set; }
         public NotificationsDbContext() : base() 
         {
         }

@@ -1,4 +1,4 @@
-namespace GroupRequests.Broker.Events
+namespace UserNotification.Broker.Events
 {
     public class GroupRequestCreatedEvent
     {

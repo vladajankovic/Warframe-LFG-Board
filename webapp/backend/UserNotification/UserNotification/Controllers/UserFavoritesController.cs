@@ -22,10 +22,18 @@ namespace UserNotification.Controllers
         public async Task<IActionResult> AddFavoriteItemForNotification([FromBody] AddOrRemoveUserFavoritesCommand command)
         {
             string? status = User.FindFirstValue("subscription_status");
-            if (string.IsNullOrEmpty(status) || status.Equals("Inactive"))
+            if (!string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
             {
                 return BadRequest(status);
             }
+
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            command.UserId = userId;
             var result = await _userFavoritesService.Create(command);
             return Ok(result);
         }
@@ -42,7 +50,13 @@ namespace UserNotification.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllFavoriteItemsFromUser()
         {
-            var result = await _userFavoritesService.GetAllFromUser(ClaimTypes.Sid);
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userFavoritesService.GetAllFromUser(userId);
             return Ok(result);
         }
 
@@ -50,6 +64,13 @@ namespace UserNotification.Controllers
         [Authorize]
         public async Task<IActionResult> RemoveFavoriteItemNotification([FromBody] AddOrRemoveUserFavoritesCommand command)
         {
+            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            command.UserId = userId;
             var result = await _userFavoritesService.Delete(command);
             return result ? Ok() : NotFound();
         }

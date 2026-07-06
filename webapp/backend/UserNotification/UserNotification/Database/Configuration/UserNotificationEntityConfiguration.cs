@@ -9,6 +9,9 @@ namespace UserNotification.Database.Configuration
         public void Configure(EntityTypeBuilder<UserNotificationEntity> builder)
         {
             builder.HasKey(x => x.Id);
+            builder.HasIndex(x => new { x.ItemName, x.CreatedAt });
+            builder.Property(x => x.GroupRequestUserId)
+                .IsRequired();
             builder.Property(x => x.ItemName)
                 .IsRequired();
             builder.Property(x => x.InGameName)

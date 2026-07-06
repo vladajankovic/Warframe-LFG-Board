@@ -1,14 +1,13 @@
-
-using Audit.Broker.RabbitMQ;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client;
 using System.Text;
+using UserNotification.Broker.RabbitMQ;
 using UserNotification.Database;
+using UserNotification.Hubs;
 using UserNotification.Repositories;
 using UserNotification.Services;
-using UsersDirectory.Broker.RabbitMQ;
 
 namespace UserNotification
 {
@@ -26,7 +25,9 @@ namespace UserNotification
                     npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "UserNotificationsSchema")));
 
             builder.Services.AddScoped<IUserFavoritesRepository, UserFavoritesRepository>();
+            builder.Services.AddScoped<IUserNotificationsRepository, UserNotificationsRepository>();
             builder.Services.AddScoped<IUserFavoritesService, UserFavoritesService>();
+            builder.Services.AddScoped<IUserNotificationsService, UserNotificationsService>();
 
             // Configure RabbitMQ
             var rabbitMQHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
@@ -44,7 +45,10 @@ namespace UserNotification
 
             builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
             builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
+            builder.Services.AddSingleton<IBrokerEventConsumer, NotificationEventConsumer>();
             builder.Services.AddHostedService<NotificationEventConsumerHostedService>();
+            builder.Services.AddHostedService<NotificationCleanupService>();
+
 
             // JWT Authentication
             var jwtKey = builder.Configuration["Jwt:Key"]
@@ -62,9 +66,27 @@ namespace UserNotification
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                     };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments(UserNotificationHub.Route))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
@@ -85,10 +107,12 @@ namespace UserNotification
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
+            app.MapHub<UserNotificationHub>(UserNotificationHub.Route);
 
             app.Run();
         }

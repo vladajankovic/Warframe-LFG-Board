@@ -2,7 +2,7 @@ using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
-namespace UsersDirectory.Broker.RabbitMQ
+namespace UserNotification.Broker.RabbitMQ
 {
     public class RabbitMQPublisher : IRabbitMQPublisher
     {

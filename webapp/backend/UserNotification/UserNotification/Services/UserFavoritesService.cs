@@ -1,8 +1,9 @@
-﻿using UserNotification.Commands;
+﻿using UserNotification.Broker.RabbitMQ;
+using UserNotification.Broker.Events;
+using UserNotification.Commands;
 using UserNotification.Database.Entities;
 using UserNotification.Models;
 using UserNotification.Repositories;
-using UsersDirectory.Broker.RabbitMQ;
 
 namespace UserNotification.Services
 {
@@ -32,7 +33,7 @@ namespace UserNotification.Services
                 return result;
             }
 
-            var entity = _repository.Create(command);
+            var entity = await _repository.Create(command);
 
             try
             {
@@ -50,7 +51,7 @@ namespace UserNotification.Services
                 // Don't rethrow - the group request was created successfully, we just failed to notify
             }
 
-            return result;
+            return entity;
         }
 
         public async Task<bool> Delete(AddOrRemoveUserFavoritesCommand command)

@@ -1,4 +1,4 @@
-namespace UsersDirectory.Broker.RabbitMQ
+namespace UserNotification.Broker.Events
 {
     public class AuditEventMessage
     {

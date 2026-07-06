@@ -1,24 +1,34 @@
 
-using GroupRequests.Broker.Events;
-using Microsoft.OpenApi;
+using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using UserNotification.Broker.Events;
+using UserNotification.Hubs;
+using UserNotification.Models;
+using UserNotification.Repositories;
+using UserNotification.Services;
 
-namespace Audit.Broker.RabbitMQ
+namespace UserNotification.Broker.RabbitMQ
 {
     public class NotificationEventConsumer : IBrokerEventConsumer
     {
         private readonly IConnectionFactory _connectionFactory;
         private readonly ILogger<NotificationEventConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IHubContext<UserNotificationHub> _hubContext;
 
-        public NotificationEventConsumer(IConnectionFactory connectionFactory, ILogger<NotificationEventConsumer> logger, IServiceProvider serviceProvider)
+        public NotificationEventConsumer(
+            IConnectionFactory connectionFactory,
+            ILogger<NotificationEventConsumer> logger,
+            IServiceProvider serviceProvider,
+            IHubContext<UserNotificationHub> hubContext)
         {
             _connectionFactory = connectionFactory;
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _hubContext = hubContext;
         }
 
         public async Task StartConsuming(CancellationToken cancellationToken)
@@ -97,9 +107,50 @@ namespace Audit.Broker.RabbitMQ
             }
         }
 
-        private async Task ProcessGroupRequestEvent(GroupRequestCreatedEvent auditEvent)
+        private async Task ProcessGroupRequestEvent(GroupRequestCreatedEvent groupRequestEvent)
         {
-            
+            using var scope = _serviceProvider.CreateScope();
+            var favoritesRepository = scope.ServiceProvider.GetRequiredService<IUserFavoritesRepository>();
+            var notificationsService = scope.ServiceProvider.GetRequiredService<IUserNotificationsService>();
+
+            var persistedNotification = await notificationsService.Create(
+                groupRequestEvent.UserId,
+                groupRequestEvent.ItemName,
+                groupRequestEvent.InGameName,
+                groupRequestEvent.CreatedAt);
+
+            var userIds = await favoritesRepository.GetSubscribedUserIds(groupRequestEvent.ItemName);
+
+            if (userIds.Count == 0)
+            {
+                _logger.LogInformation(
+                    "Stored notification {NotificationId}, but no connected subscribed users were found for item {ItemName}",
+                    persistedNotification.Id,
+                    groupRequestEvent.ItemName);
+                return;
+            }
+
+            var notification = new GroupRequestNotification
+            {
+                Id = persistedNotification.Id,
+                GroupRequestUserId = persistedNotification.GroupRequestUserId,
+                ItemName = persistedNotification.ItemName,
+                InGameName = persistedNotification.InGameName,
+                CreatedAt = persistedNotification.CreatedAt
+            };
+
+            var sendTasks = userIds.Select(userId =>
+                _hubContext
+                    .Clients
+                    .Group(UserNotificationHub.GetUserGroupName(userId))
+                    .SendAsync(UserNotificationHub.GroupRequestCreatedMethod, notification));
+
+            await Task.WhenAll(sendTasks);
+
+            _logger.LogInformation(
+                "Sent group request notification for item {ItemName} to {RecipientCount} subscribed users",
+                groupRequestEvent.ItemName,
+                userIds.Count);
         }
     }
 }

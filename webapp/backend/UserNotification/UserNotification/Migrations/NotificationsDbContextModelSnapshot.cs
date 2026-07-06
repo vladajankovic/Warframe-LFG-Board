@@ -44,6 +44,24 @@ namespace UserNotification.Migrations
                     b.ToTable("Favorites", "UserNotificationsSchema");
                 });
 
+            modelBuilder.Entity("UserNotification.Database.Entities.UserNotificationDismissalEntity", b =>
+                {
+                    b.Property<string>("NotificationId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("DismissedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("NotificationId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("NotificationDismissals", "UserNotificationsSchema");
+                });
+
             modelBuilder.Entity("UserNotification.Database.Entities.UserNotificationEntity", b =>
                 {
                     b.Property<string>("Id")
@@ -51,6 +69,10 @@ namespace UserNotification.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GroupRequestUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("InGameName")
                         .IsRequired()
@@ -62,7 +84,25 @@ namespace UserNotification.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ItemName", "CreatedAt");
+
                     b.ToTable("Notifications", "UserNotificationsSchema");
+                });
+
+            modelBuilder.Entity("UserNotification.Database.Entities.UserNotificationDismissalEntity", b =>
+                {
+                    b.HasOne("UserNotification.Database.Entities.UserNotificationEntity", "Notification")
+                        .WithMany("DismissedUsers")
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Notification");
+                });
+
+            modelBuilder.Entity("UserNotification.Database.Entities.UserNotificationEntity", b =>
+                {
+                    b.Navigation("DismissedUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -44,6 +44,17 @@ namespace UserNotification.Repositories
             return true;
         }
 
+        public async Task<int> DeleteAllFromUser(string userId)
+        {
+            var favorites = await this.GetAllFromUser(userId);
+
+            _dbContext.Favorites.RemoveRange(favorites);
+
+            await _dbContext.SaveChangesAsync();
+
+            return favorites.Count;
+        }
+
         public async Task<UserFavoriteEntity> Get(string userId, string itemName)
         {
             return await _dbContext.Favorites.Where(x => x.UserId.Equals(userId) && x.ItemName.Equals(itemName)).FirstOrDefaultAsync();
@@ -57,6 +68,13 @@ namespace UserNotification.Repositories
         public async Task<List<UserFavoriteEntity>> GetAllFromUser(string userId)
         {
             return await _dbContext.Favorites.Where(x => x.UserId.Equals(userId)).ToListAsync();
+        }
+
+        public async Task<List<string>> GetSubscribedUserIds(string itemName)
+        {
+            return await _dbContext.Favorites.Where(x => x.ItemName.Equals(itemName)).Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync();
         }
     }
 }
