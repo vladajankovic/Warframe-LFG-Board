@@ -22,6 +22,8 @@ import GroupRequestsAdminPage from './pages/GroupRequestsAdminPage'
 import LogsAdminPage from './pages/LogsAdminPage'
 import SettingsPage from './pages/SettingsPage'
 import MyGroupRequestsPage from './pages/MyGroupRequestsPage'
+import FavoritesPage from './pages/FavoritesPage'
+import FavoritesAdminPage from './pages/FavoritesAdminPage'
 
 function RequireAuth({ role }: { role?: string }) {
   const token = localStorage.getItem('auth_token')
@@ -72,6 +74,7 @@ export default function App() {
           <Route element={<RequireAuth />}>
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/my-requests" element={<MyGroupRequestsPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
           </Route>
           <Route element={<RequireAuth role="Admin" />}>
             <Route path="/admin" element={<AdminLayout />}>
@@ -80,6 +83,7 @@ export default function App() {
               <Route path="resources" element={<ResourcesAdminPage />} />
               <Route path="users" element={<UsersAdminPage />} />
               <Route path="group-requests" element={<GroupRequestsAdminPage />} />
+              <Route path="favorites" element={<FavoritesAdminPage />} />
               <Route path="logs" element={<LogsAdminPage />} />
             </Route>
           </Route>

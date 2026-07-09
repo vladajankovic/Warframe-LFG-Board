@@ -9,6 +9,7 @@ import {
   type GroupRequest,
 } from '../api/groupRequestsApi'
 import { notifyError, notifySuccess } from '../api/apiUtils'
+import { FavoriteButton } from '../components/FavoriteButton'
 
 function GroupRequestSection({ itemName }: { itemName: string }) {
   const email = localStorage.getItem('user_email')
@@ -152,6 +153,7 @@ export default function ResourceDetailPage() {
   const [resource, setResource] = useState<Resource | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isLoggedIn = Boolean(localStorage.getItem('user_email'))
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -179,6 +181,7 @@ export default function ResourceDetailPage() {
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <h1 className="detail-card__name">{resource.name}</h1>
+            {isLoggedIn && <FavoriteButton itemName={resource.name} />}
             <p className="detail-card__sub">
               {[resource.region, resource.category, resource.group]
                 .filter(Boolean)

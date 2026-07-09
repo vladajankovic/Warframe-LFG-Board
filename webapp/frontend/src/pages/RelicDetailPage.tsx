@@ -9,6 +9,7 @@ import {
   type GroupRequest,
 } from '../api/groupRequestsApi'
 import { notifyError, notifySuccess } from '../api/apiUtils'
+import { FavoriteButton } from '../components/FavoriteButton'
 
 function relicImgSrc(relicType: string, quality: string) {
   const typeKey =
@@ -31,11 +32,20 @@ function extractRefinement(fullItemName: string): string {
   return match ? match[1] : ''
 }
 
-function GroupRequestSection({ itemName, relicType }: { itemName: string; relicType: string }) {
+function GroupRequestSection({
+  itemName,
+  relicType,
+  activeTab,
+  onTabChange,
+}: {
+  itemName: string
+  relicType: string
+  activeTab: GrTab
+  onTabChange: (tab: GrTab) => void
+}) {
   const email = localStorage.getItem('user_email')
   const ign = localStorage.getItem('user_ign') ?? ''
 
-  const [activeTab, setActiveTab] = useState<GrTab>('All')
   const [requests, setRequests] = useState<GroupRequest[]>([])
   const [ownRequest, setOwnRequest] = useState<{ itemName: string } | null>(null)
   const [loadingList, setLoadingList] = useState(true)
@@ -103,7 +113,7 @@ function GroupRequestSection({ itemName, relicType }: { itemName: string; relicT
           <button
             key={t}
             className={`gr-tab${activeTab === t ? ' gr-tab--active' : ''}`}
-            onClick={() => setActiveTab(t)}
+            onClick={() => onTabChange(t)}
             type="button"
           >
             {t}
@@ -198,6 +208,8 @@ export default function RelicDetailPage() {
   const [relic, setRelic] = useState<Relic | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<GrTab>('All')
+  const isLoggedIn = Boolean(localStorage.getItem('user_email'))
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -225,9 +237,20 @@ export default function RelicDetailPage() {
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <h1 className="detail-card__name">{relic.name}</h1>
+            {isLoggedIn && (
+              <FavoriteButton
+                itemName={activeTab === 'All' ? null : refinedName(relic.name, activeTab)}
+                disabledMessage="Select a refinement before adding this relic to favorites."
+              />
+            )}
           </div>
 
-          <GroupRequestSection itemName={relic.name} relicType={relic.relicType} />
+          <GroupRequestSection
+            itemName={relic.name}
+            relicType={relic.relicType}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
         </>
       )}
     </div>

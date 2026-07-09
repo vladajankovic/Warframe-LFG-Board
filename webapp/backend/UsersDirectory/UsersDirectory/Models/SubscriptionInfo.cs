@@ -8,5 +8,6 @@ namespace UsersDirectory.Models
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public SubscriptionStatus SubscriptionStatus { get; set; }
         public DateTime? SubscriptionExpiryDate { get; set; }
+        public string? Token { get; set; }
     }
 }

@@ -240,6 +240,13 @@ export default function NavBar() {
                   ⚑ My Requests
                   </Link>
                   <Link
+                    to="/favorites"
+                    className="navbar__dropdown-item"
+                    onClick={() => setOpen(false)}
+                  >
+                  ★ Favorites
+                  </Link>
+                  <Link
                     to="/settings"
                     className="navbar__dropdown-item"
                     onClick={() => setOpen(false)}

@@ -97,6 +97,7 @@ export interface LoginResponse {
 export interface SubscriptionInfo {
   subscriptionStatus: 'Active' | 'Inactive'
   subscriptionExpiryDate: string | null
+  token?: string
 }
 
 export function getAuthToken(): string | null {

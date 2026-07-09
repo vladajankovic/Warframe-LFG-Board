@@ -76,6 +76,8 @@ export default function SettingsPage() {
       setSubscriptionExpiry(info.subscriptionExpiryDate ?? '')
       localStorage.setItem('user_subscription_status', info.subscriptionStatus)
       localStorage.setItem('user_subscription_expiry', info.subscriptionExpiryDate ?? '')
+      if (info.token) localStorage.setItem('auth_token', info.token)
+      window.dispatchEvent(new Event('user_auth_changed'))
       notifySuccess('Subscription activated successfully.')
     } catch (err) {
       notifyError(err instanceof Error ? err.message : 'Failed to activate subscription.')
@@ -92,6 +94,8 @@ export default function SettingsPage() {
       setSubscriptionExpiry(info.subscriptionExpiryDate ?? '')
       localStorage.setItem('user_subscription_status', info.subscriptionStatus)
       localStorage.setItem('user_subscription_expiry', info.subscriptionExpiryDate ?? '')
+      if (info.token) localStorage.setItem('auth_token', info.token)
+      window.dispatchEvent(new Event('user_auth_changed'))
       notifySuccess('Subscription cancelled.')
     } catch (err) {
       notifyError(err instanceof Error ? err.message : 'Failed to cancel subscription.')

@@ -34,6 +34,14 @@ const MENU_ITEMS = [
     available: true,
   },
   {
+    id: 'favorites',
+    title: 'Favorites',
+    description: 'View item notification favorites across users.',
+    icon: '★',
+    path: '/admin/favorites',
+    available: true,
+  },
+  {
     id: 'logs',
     title: 'View Logs',
     description: 'Inspect application activity logs.',

@@ -403,6 +403,7 @@ namespace UsersDirectory.Services
             {
                 SubscriptionStatus = updatedEntity.SubscriptionStatus,
                 SubscriptionExpiryDate = updatedEntity.SubscriptionExpiryDate,
+                Token = GenerateJwtToken(updatedEntity.Id, updatedEntity.Email, updatedEntity.Role, updatedEntity.SubscriptionStatus),
             };
         }
 
@@ -442,6 +443,7 @@ namespace UsersDirectory.Services
             {
                 SubscriptionStatus = updatedEntity.SubscriptionStatus,
                 SubscriptionExpiryDate = updatedEntity.SubscriptionExpiryDate,
+                Token = GenerateJwtToken(updatedEntity.Id, updatedEntity.Email, updatedEntity.Role, updatedEntity.SubscriptionStatus),
             };
         }
 

@@ -308,5 +308,64 @@ namespace UsersDirectory.Tests.Services
             Assert.Contains(jwt.Claims, c => c.Type == "email" && c.Value == "admin@test.com");
             Assert.Contains(jwt.Claims, c => c.Value == "Admin");
         }
+
+        [Fact]
+        public async Task ActivateSubscription_ReturnsTokenWithActiveSubscriptionClaim()
+        {
+            var email = "user@test.com";
+            var entity = MakeEntity(email);
+            entity.SubscriptionStatus = UsersDirectory.Enums.SubscriptionStatus.Inactive;
+
+            var updated = MakeEntity(email);
+            updated.Id = entity.Id;
+            updated.SubscriptionStatus = UsersDirectory.Enums.SubscriptionStatus.Active;
+            updated.SubscriptionExpiryDate = DateTime.UtcNow.AddMonths(1);
+
+            _repositoryMock.Setup(r => r.GetUser(email)).ReturnsAsync(entity);
+            _repositoryMock
+                .Setup(r => r.UpdateSubscription(
+                    email,
+                    UsersDirectory.Enums.SubscriptionStatus.Active,
+                    It.IsAny<DateTime>()))
+                .ReturnsAsync(updated);
+
+            var result = await _sut.ActivateSubscription(email);
+
+            Assert.Equal(UsersDirectory.Enums.SubscriptionStatus.Active, result.SubscriptionStatus);
+            Assert.False(string.IsNullOrWhiteSpace(result.Token));
+
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(result.Token);
+            Assert.Contains(jwt.Claims, c => c.Type == "subscription_status" && c.Value == "Active");
+        }
+
+        [Fact]
+        public async Task CancelSubscription_ReturnsTokenWithInactiveSubscriptionClaim()
+        {
+            var email = "user@test.com";
+            var expiry = DateTime.UtcNow.AddMonths(1);
+            var entity = MakeEntity(email);
+            entity.SubscriptionStatus = UsersDirectory.Enums.SubscriptionStatus.Active;
+            entity.SubscriptionExpiryDate = expiry;
+
+            var updated = MakeEntity(email);
+            updated.Id = entity.Id;
+            updated.SubscriptionStatus = UsersDirectory.Enums.SubscriptionStatus.Inactive;
+            updated.SubscriptionExpiryDate = expiry;
+
+            _repositoryMock.Setup(r => r.GetUser(email)).ReturnsAsync(entity);
+            _repositoryMock
+                .Setup(r => r.UpdateSubscription(email, UsersDirectory.Enums.SubscriptionStatus.Inactive, expiry))
+                .ReturnsAsync(updated);
+
+            var result = await _sut.CancelSubscription(email);
+
+            Assert.Equal(UsersDirectory.Enums.SubscriptionStatus.Inactive, result.SubscriptionStatus);
+            Assert.False(string.IsNullOrWhiteSpace(result.Token));
+
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(result.Token);
+            Assert.Contains(jwt.Claims, c => c.Type == "subscription_status" && c.Value == "Inactive");
+        }
     }
 }
