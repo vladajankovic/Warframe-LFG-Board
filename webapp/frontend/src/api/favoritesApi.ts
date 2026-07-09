@@ -23,10 +23,9 @@ export async function fetchAdminFavorites(): Promise<UserFavorites[]> {
 }
 
 export async function addFavorite(itemName: string): Promise<void> {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${encodeURIComponent(itemName)}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ itemName }),
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
   })
 
   if (res.status === 400) {
@@ -37,10 +36,9 @@ export async function addFavorite(itemName: string): Promise<void> {
 }
 
 export async function removeFavorite(itemName: string): Promise<void> {
-  const res = await fetch(BASE_URL, {
+  const res = await fetch(`${BASE_URL}/${encodeURIComponent(itemName)}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ itemName }),
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
   })
 
   if (!res.ok) throw new Error(await parseApiError(res, 'Failed to remove favorite.'))

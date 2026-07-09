@@ -17,9 +17,9 @@ namespace UserNotification.Controllers
             _userFavoritesService = userFavoritesService;
         }
 
-        [HttpPost]
+        [HttpPost("{itemName}")]
         [Authorize]
-        public async Task<IActionResult> AddFavoriteItemForNotification([FromBody] AddOrRemoveUserFavoritesCommand command)
+        public async Task<IActionResult> AddFavoriteItemForNotification([FromRoute] string itemName)
         {
             string? status = User.FindFirstValue("subscription_status");
             if (!string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
@@ -33,7 +33,11 @@ namespace UserNotification.Controllers
                 return Unauthorized();
             }
 
-            command.UserId = userId;
+            var command = new AddOrRemoveUserFavoritesCommand
+            {
+                UserId = userId,
+                ItemName = itemName
+            };
             var result = await _userFavoritesService.Create(command);
             return Ok(result);
         }
@@ -60,9 +64,9 @@ namespace UserNotification.Controllers
             return Ok(result);
         }
 
-        [HttpDelete]
+        [HttpDelete("{itemName}")]
         [Authorize]
-        public async Task<IActionResult> RemoveFavoriteItemNotification([FromBody] AddOrRemoveUserFavoritesCommand command)
+        public async Task<IActionResult> RemoveFavoriteItemNotification([FromRoute] string itemName)
         {
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -70,7 +74,11 @@ namespace UserNotification.Controllers
                 return Unauthorized();
             }
 
-            command.UserId = userId;
+            var command = new AddOrRemoveUserFavoritesCommand
+            {
+                UserId = userId,
+                ItemName = itemName
+            };
             var result = await _userFavoritesService.Delete(command);
             return result ? Ok() : NotFound();
         }
