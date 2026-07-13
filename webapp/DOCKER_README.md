@@ -25,6 +25,12 @@ The docker-compose.yml includes:
   - UsersDirectory (port 8001)
   - ItemsStore (port 8002)
   - GroupRequests (port 8003)
+  - Audit (port 8004)
+  - UserNotification (port 8005)
+
+- **Frontend App** (port 3000)
+  - Serves the React app through Nginx
+  - Proxies `/v1/...` API calls and `/hubs/user-notifications` SignalR traffic to the internal services
 
 ## Running the Services
 
@@ -62,6 +68,9 @@ These are set in the docker-compose.yml file. Modify them as needed for your env
 - **Users Directory API**: http://localhost:8001
 - **Items Store API**: http://localhost:8002
 - **Group Requests API**: http://localhost:8003
+- **Audit API**: http://localhost:8004
+- **User Notification API**: http://localhost:8005
+- **Frontend App**: http://localhost:3000
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 - **PostgreSQL**: localhost:5432
 

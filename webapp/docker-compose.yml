@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -135,6 +133,52 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - warframe-network
+
+  # UserNotification Microservice
+  user-notification:
+    build:
+      context: ./backend/UserNotification
+      dockerfile: Dockerfile
+    container_name: warframe-user-notification
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=WarframeLFGBoardDb;Username=postgres;Password=kolkoparatolkomuzike"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: 5672
+      RabbitMQ__Username: guest
+      RabbitMQ__Password: guest
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8005:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - warframe-network
+
+  # Frontend App
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: warframe-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      users-directory:
+        condition: service_started
+      items-store:
+        condition: service_started
+      group-requests:
+        condition: service_started
+      audit:
+        condition: service_started
+      user-notification:
+        condition: service_started
     networks:
       - warframe-network
 
