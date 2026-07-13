@@ -23,11 +23,11 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/v1/user-notification': {
-        target: 'http://localhost:8085',
+        target: 'http://localhost:8005',
         changeOrigin: true,
       },
       '/hubs/user-notifications': {
-        target: 'http://localhost:8085',
+        target: 'http://localhost:8005',
         changeOrigin: true,
         ws: true,
       },

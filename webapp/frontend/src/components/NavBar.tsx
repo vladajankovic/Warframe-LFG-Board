@@ -167,7 +167,9 @@ export default function NavBar() {
                 aria-label="Notifications"
                 onClick={() => setNotificationsOpen(value => !value)}
               >
-                <span aria-hidden="true">&#128276;</span>
+                <span aria-hidden="true" className="navbar__notification-icon">
+                  &#128276;
+                </span>
                 {notifications.length > 0 && <span className="navbar__notification-dot" />}
               </button>
 
