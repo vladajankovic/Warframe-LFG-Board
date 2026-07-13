@@ -53,9 +53,10 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
       ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8001:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,9 +78,10 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
       ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8002:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -101,9 +103,10 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
       ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8003:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -125,9 +128,10 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
       ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8004:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -149,14 +153,46 @@ services:
       RabbitMQ__Port: 5672
       RabbitMQ__Username: guest
       RabbitMQ__Password: guest
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
       ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8005:8080"
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+    networks:
+      - warframe-network
+
+  # API Gateway - the single public entry point for backend HTTP and WebSocket traffic
+  api-gateway:
+    build:
+      context: ./backend/ApiGateway
+      dockerfile: Dockerfile
+    container_name: warframe-api-gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Jwt__Key: "${JWT_KEY:-Wf-Items-2026-MasterRad-JWT-Key-z9XmK2pLqR5nYwBvEuHcJ}"
+      ReverseProxy__Clusters__users-directory__Destinations__primary__Address: http://users-directory:8080/
+      ReverseProxy__Clusters__items-store__Destinations__primary__Address: http://items-store:8080/
+      ReverseProxy__Clusters__group-requests__Destinations__primary__Address: http://group-requests:8080/
+      ReverseProxy__Clusters__audit__Destinations__primary__Address: http://audit:8080/
+      ReverseProxy__Clusters__user-notification__Destinations__primary__Address: http://user-notification:8080/
+    ports:
+      - "8080:8080"
+    depends_on:
+      users-directory:
+        condition: service_started
+      items-store:
+        condition: service_started
+      group-requests:
+        condition: service_started
+      audit:
+        condition: service_started
+      user-notification:
+        condition: service_started
     networks:
       - warframe-network
 
@@ -169,15 +205,7 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      users-directory:
-        condition: service_started
-      items-store:
-        condition: service_started
-      group-requests:
-        condition: service_started
-      audit:
-        condition: service_started
-      user-notification:
+      api-gateway:
         condition: service_started
     networks:
       - warframe-network
