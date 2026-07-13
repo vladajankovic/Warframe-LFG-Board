@@ -19,7 +19,7 @@ namespace ItemsStore.Broker.RabbitMQ
         {
             try
             {
-                using (var connection = await _connectionFactory.CreateConnectionAsync())
+                using (var connection = await _connectionFactory.CreateConnectionWithRetryAsync(_logger))
                 using (var channel = await connection.CreateChannelAsync())
                 {
                     await channel.QueueDeclareAsync(
@@ -59,7 +59,7 @@ namespace ItemsStore.Broker.RabbitMQ
         {
             try
             {
-                using (var connection = await _connectionFactory.CreateConnectionAsync())
+                using (var connection = await _connectionFactory.CreateConnectionWithRetryAsync(_logger))
                 using (var channel = await connection.CreateChannelAsync())
                 {
                     await channel.ExchangeDeclareAsync(

@@ -25,7 +25,7 @@ namespace Audit.Broker.RabbitMQ
         {
             try
             {
-                using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+                using var connection = await _connectionFactory.CreateConnectionWithRetryAsync(_logger, cancellationToken);
                 using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
                 const string queueName = "audit";
 
