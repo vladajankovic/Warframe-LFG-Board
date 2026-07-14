@@ -9,6 +9,7 @@ namespace UserNotification.Services
 {
     public class UserFavoritesService : IUserFavoritesService
     {
+        private readonly int MAX_FAVORITES = 10;
         private readonly IUserFavoritesRepository _repository;
         private readonly IRabbitMQPublisher _rabbitMQPublisher;
         private readonly ILogger<UserFavoritesService> _logger;
@@ -31,6 +32,13 @@ namespace UserNotification.Services
             if (result != null)
             {
                 return result;
+            }
+
+            var favorites = await _repository.GetAllFromUser(command.UserId);
+
+            if (favorites != null && favorites.Count >= MAX_FAVORITES)
+            {
+                throw new InvalidOperationException($"User has reached the maximum number of favorites ({MAX_FAVORITES}).");
             }
 
             var entity = await _repository.Create(command);

@@ -38,8 +38,15 @@ namespace UserNotification.Controllers
                 UserId = userId,
                 ItemName = itemName
             };
-            var result = await _userFavoritesService.Create(command);
-            return Ok(result);
+            try
+            {
+                var result = await _userFavoritesService.Create(command);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]

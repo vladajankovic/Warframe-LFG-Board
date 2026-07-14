@@ -100,9 +100,11 @@ namespace GroupRequests.Controllers
             if (!validation.IsValid)
                 return BadRequest(validation.Errors.Select(e => new { e.ErrorCode, e.ErrorMessage }));
 
+            string status = User.FindFirstValue("subscription_status") ?? "Inactive";
+
             try
             {
-                var created = await _groupRequestsService.CreateGroupRequest(command);
+                var created = await _groupRequestsService.CreateGroupRequest(command, status);
                 return StatusCode((int)HttpStatusCode.Created, created);
             }
             catch (InvalidOperationException ex)

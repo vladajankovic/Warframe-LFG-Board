@@ -63,6 +63,46 @@ namespace UserNotification.Tests.Services
         }
 
         [Fact]
+        public async Task Create_WhenUserIsBelowFavoriteLimit_CreatesFavorite()
+        {
+            var command = MakeCommand();
+            var created = MakeFavorite(command.UserId, command.ItemName);
+            var favorites = Enumerable.Range(1, 9)
+                .Select(index => MakeFavorite(command.UserId, $"Item {index}"))
+                .ToList();
+
+            _repositoryMock.Setup(r => r.GetAllFromUser(command.UserId))
+                .ReturnsAsync(favorites);
+            _repositoryMock.Setup(r => r.Get(command.UserId, command.ItemName))
+                .ReturnsAsync((UserFavoriteEntity?)null!);
+            _repositoryMock.Setup(r => r.Create(command))
+                .ReturnsAsync(created);
+
+            var result = await _service.Create(command);
+
+            Assert.Same(created, result);
+            _repositoryMock.Verify(r => r.Create(command), Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_WhenUserHasReachedFavoriteLimit_ThrowsAndDoesNotCreate()
+        {
+            var command = MakeCommand();
+            var favorites = Enumerable.Range(1, 10)
+                .Select(index => MakeFavorite(command.UserId, $"Item {index}"))
+                .ToList();
+
+            _repositoryMock.Setup(r => r.GetAllFromUser(command.UserId))
+                .ReturnsAsync(favorites);
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.Create(command));
+
+            Assert.Contains("maximum number of favorites (10)", exception.Message);
+            _repositoryMock.Verify(r => r.Create(It.IsAny<AddOrRemoveUserFavoritesCommand>()), Times.Never);
+        }
+
+        [Fact]
         public async Task Delete_WhenRepositoryDeletesFavorite_PublishesAuditAndReturnsTrue()
         {
             var command = MakeCommand();

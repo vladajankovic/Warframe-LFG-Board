@@ -9,6 +9,7 @@ namespace GroupRequests.Services
 {
     public class GroupRequestsService : IGroupRequestsService
     {
+        private readonly int MaxGroupRequestsForSubscribedUsers = 5;
         private readonly IGroupRequestsRepository _groupRequestsRepository;
         private readonly IMapper _mapper;
         private readonly IRabbitMQPublisher _rabbitMQPublisher;
@@ -26,13 +27,19 @@ namespace GroupRequests.Services
             _logger = logger;
         }
 
-        public async Task<GroupRequestDTO> CreateGroupRequest(AddGroupRequestCommand command)
+        public async Task<GroupRequestDTO> CreateGroupRequest(AddGroupRequestCommand command, string status)
         {
             var userGroupRequests = await _groupRequestsRepository.GetGroupRequestsByUserId(command.UserId);
             
-            if (userGroupRequests != null && userGroupRequests.Count > 0)
+            if (userGroupRequests != null && userGroupRequests.Count > 0 && !status.Equals("Active"))
             {
                 throw new InvalidOperationException("User has already created a group request");
+            }
+
+            if (userGroupRequests != null && userGroupRequests.Count >= MaxGroupRequestsForSubscribedUsers && status.Equals("Active"))
+            {
+                throw new InvalidOperationException("Maximum allowed number of created group requests reached.\n" +
+                    $"User has {MaxGroupRequestsForSubscribedUsers} group request active.");
             }
 
             var newGroupRequest = await _groupRequestsRepository.CreateGroupRequest(command);

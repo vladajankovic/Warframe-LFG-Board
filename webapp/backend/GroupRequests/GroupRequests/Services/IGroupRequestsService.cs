@@ -9,7 +9,7 @@ namespace GroupRequests.Services
         public Task<List<GroupRequestDTO>> GetGroupRequestsByItemName(string itemName);
         public Task<List<GroupRequestDTO>> GetGroupRequestsByUserId(string userId);
         public Task<GroupRequestDTO> GetGroupRequest(string userId, string itemName);
-        public Task<GroupRequestDTO> CreateGroupRequest(AddGroupRequestCommand command);
+        public Task<GroupRequestDTO> CreateGroupRequest(AddGroupRequestCommand command, string status);
         public Task<bool> DeleteGroupRequest(DeleteGroupRequestCommand command);
     }
 }

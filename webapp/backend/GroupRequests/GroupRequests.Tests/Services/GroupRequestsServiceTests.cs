@@ -8,7 +8,6 @@ using GroupRequests.Services;
 using GroupRequests.Utility.Mappers;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.ComponentModel.Design;
 using Xunit;
 
 namespace GroupRequests.Tests.Services
@@ -53,7 +52,7 @@ namespace GroupRequests.Tests.Services
             _repoMock.Setup(r => r.CreateGroupRequest(command))
                      .ReturnsAsync(entity);
 
-            var result = await _service.CreateGroupRequest(command);
+            var result = await _service.CreateGroupRequest(command, "Inactive");
 
             Assert.NotNull(result);
             Assert.Equal(entity.UserId, result.UserId);
@@ -72,7 +71,7 @@ namespace GroupRequests.Tests.Services
             _repoMock.Setup(r => r.CreateGroupRequest(command))
                      .ReturnsAsync(entity);
 
-            var result = await _service.CreateGroupRequest(command);
+            var result = await _service.CreateGroupRequest(command, "Inactive");
 
             Assert.NotNull(result);
             Assert.Equal(entity.UserId, result.UserId);
@@ -86,7 +85,7 @@ namespace GroupRequests.Tests.Services
             _repoMock.Setup(r => r.GetGroupRequestsByUserId(command.UserId))
                      .ReturnsAsync(new List<GroupRequestEntity> { MakeEntity() });
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateGroupRequest(command));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateGroupRequest(command, "Inactive"));
         }
 
         [Fact]
@@ -97,8 +96,47 @@ namespace GroupRequests.Tests.Services
             _repoMock.Setup(r => r.GetGroupRequestsByUserId(command.UserId))
                      .ReturnsAsync(new List<GroupRequestEntity> { MakeEntity() });
 
-            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateGroupRequest(command));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateGroupRequest(command, "Inactive"));
 
+            _repoMock.Verify(r => r.CreateGroupRequest(It.IsAny<AddGroupRequestCommand>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CreateGroupRequest_WhenSubscribedUserIsBelowLimit_CreatesRequest()
+        {
+            var command = MakeAddCommand(itemName: "Orokin Cell");
+            var entity = MakeEntity(itemName: command.ItemName);
+            var existingRequests = Enumerable.Range(1, 4)
+                .Select(index => MakeEntity(itemName: $"Item {index}"))
+                .ToList();
+
+            _repoMock.Setup(r => r.GetGroupRequestsByUserId(command.UserId))
+                     .ReturnsAsync(existingRequests);
+            _repoMock.Setup(r => r.CreateGroupRequest(command))
+                     .ReturnsAsync(entity);
+
+            var result = await _service.CreateGroupRequest(command, "Active");
+
+            Assert.NotNull(result);
+            Assert.Equal(command.ItemName, result.ItemName);
+            _repoMock.Verify(r => r.CreateGroupRequest(command), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateGroupRequest_WhenSubscribedUserHasReachedLimit_ThrowsAndDoesNotCreate()
+        {
+            var command = MakeAddCommand(itemName: "Orokin Cell");
+            var existingRequests = Enumerable.Range(1, 5)
+                .Select(index => MakeEntity(itemName: $"Item {index}"))
+                .ToList();
+
+            _repoMock.Setup(r => r.GetGroupRequestsByUserId(command.UserId))
+                     .ReturnsAsync(existingRequests);
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.CreateGroupRequest(command, "Active"));
+
+            Assert.Contains("Maximum allowed number", exception.Message);
             _repoMock.Verify(r => r.CreateGroupRequest(It.IsAny<AddGroupRequestCommand>()), Times.Never);
         }
 
