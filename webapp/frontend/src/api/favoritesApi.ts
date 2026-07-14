@@ -2,8 +2,6 @@ import { authHeaders } from './itemsApi'
 import { parseApiError } from './apiUtils'
 
 const BASE_URL = '/v1/user-notification/favorites'
-export const FAVORITES_SUBSCRIPTION_REQUIRED_MESSAGE =
-  'You need an active subscription to listen for notifications for favorite items.'
 
 export interface UserFavorites {
   userId: string
@@ -29,7 +27,8 @@ export async function addFavorite(itemName: string): Promise<void> {
   })
 
   if (res.status === 400) {
-    throw new Error(FAVORITES_SUBSCRIPTION_REQUIRED_MESSAGE)
+    const errorText = await res.text()
+    throw new Error(errorText)
   }
 
   if (!res.ok) throw new Error(await parseApiError(res, 'Failed to add favorite.'))

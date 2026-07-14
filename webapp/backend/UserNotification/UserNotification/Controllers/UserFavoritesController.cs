@@ -24,7 +24,7 @@ namespace UserNotification.Controllers
             string? status = User.FindFirstValue("subscription_status");
             if (!string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest(status);
+                return BadRequest("You need an active subscription to listen for notifications for favorite items.");
             }
 
             string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
