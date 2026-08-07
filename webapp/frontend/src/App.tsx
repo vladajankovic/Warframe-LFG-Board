@@ -54,6 +54,12 @@ function Layout() {
           <span className="home-footer__label">vladajankovic</span>
           <span className="home-footer__sublabel">GitHub profile</span>
         </a>
+        <div className="home-footer__disclaimer">
+          <strong>Disclaimer</strong>
+          <p>
+            Digital Extremes Ltd, Warframe and the logo Warframe are registered trademarks. All rights are reserved worldwide. This site has no official link with Digital Extremes Ltd or Warframe. All artwork, screenshots, characters or other recognizable features of the intellectual property relating to these trademarks are likewise the intellectual property of Digital Extremes Ltd.
+          </p>
+        </div>
       </footer>
     </>
   )

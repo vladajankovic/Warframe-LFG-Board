@@ -209,6 +209,7 @@ export default function RelicDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<GrTab>('All')
+  const [refinementImageIndex, setRefinementImageIndex] = useState(0)
   const isLoggedIn = Boolean(localStorage.getItem('user_email'))
   const navigate = useNavigate()
 
@@ -219,6 +220,21 @@ export default function RelicDetailPage() {
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false))
   }, [name])
+
+  useEffect(() => {
+    setRefinementImageIndex(0)
+    if (activeTab !== 'All') return
+
+    const intervalId = window.setInterval(() => {
+      setRefinementImageIndex(current => (current + 1) % REFINEMENTS.length)
+    }, 1800)
+
+    return () => window.clearInterval(intervalId)
+  }, [activeTab])
+
+  const displayedRefinement: Refinement = activeTab === 'All'
+    ? REFINEMENTS[refinementImageIndex]
+    : activeTab
 
   return (
     <div className="detail-page">
@@ -232,8 +248,8 @@ export default function RelicDetailPage() {
           <div className="detail-card">
             <img
               className="detail-card__img"
-              src={relicImgSrc(relic.relicType, 'Radiant')}
-              alt={relic.name}
+              src={relicImgSrc(relic.relicType, displayedRefinement)}
+              alt={`${relic.name} ${displayedRefinement}`}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <h1 className="detail-card__name">{relic.name}</h1>
