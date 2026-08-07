@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changePassword, deleteOwnAccount, updateInGameName, activateSubscription, cancelSubscription } from '../api/usersApi'
+import { changePassword, deleteOwnAccount, updateInGameName, activateSubscription, cancelSubscription, fetchWarframeDisplayName } from '../api/usersApi'
 import { notifyError, notifySuccess } from '../api/apiUtils'
 import { DeleteModal } from '../components/DeleteModal'
 
@@ -25,21 +25,23 @@ export default function SettingsPage() {
   const [pwSaving, setPwSaving] = useState(false)
 
   // ── Change in-game name ─────────────────────────────────
-  const [inGameName, setInGameName] = useState('')
+  const [inGameName, setInGameName] = useState(currentIgn)
+  const [warframeUserData, setWarframeUserData] = useState('')
   const [ignSaving, setIgnSaving] = useState(false)
 
-  async function handleInGameNameChange(e: FormEvent) {
-    e.preventDefault()
+  async function handleFetchInGameName() {
     setIgnSaving(true)
     try {
-      await updateInGameName(email, inGameName)
-      localStorage.setItem('user_ign', inGameName)
-      setCurrentIgn(inGameName)
+      const displayName = await fetchWarframeDisplayName(warframeUserData)
+      await updateInGameName(email, displayName)
+      localStorage.setItem('user_ign', displayName)
+      setInGameName(displayName)
+      setCurrentIgn(displayName)
+      setWarframeUserData('')
       window.dispatchEvent(new Event('user_auth_changed'))
-      notifySuccess('In-game name updated successfully.')
-      setInGameName('')
+      notifySuccess(`Warframe display name set to ${displayName}.`)
     } catch (err) {
-      notifyError(err instanceof Error ? err.message : 'Failed to update in-game name.')
+      notifyError(err instanceof Error ? err.message : 'Failed to fetch your Warframe display name.')
     } finally {
       setIgnSaving(false)
     }
@@ -185,28 +187,62 @@ export default function SettingsPage() {
         {/* ── Change in-game name ── */}
         <section className="settings-section">
           <h2 className="settings-section__title">In-Game Name</h2>
-          <form className="settings-form" onSubmit={handleInGameNameChange}>
+          <div className="settings-form">
+            <p className="settings-section__desc">
+              1. Log in to the official Warframe website in this browser.
+            </p>
+            <a
+              className="settings-btn settings-btn--save settings-btn--link"
+              href="https://www.warframe.com/login"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Log in to Warframe
+            </a>
+            <p className="settings-section__desc">
+              2. Open your Warframe user data, copy the entire JSON response, and return here.
+            </p>
+            <a
+              className="settings-btn settings-btn--save settings-btn--link"
+              href="https://www.warframe.com/api/user-data"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open Warframe User Data
+            </a>
             <label className="settings-label">
-              New In-Game Name
+              Warframe User Data JSON
+              <textarea
+                className="settings-input settings-input--json"
+                value={warframeUserData}
+                onChange={e => setWarframeUserData(e.target.value)}
+                placeholder={'{"country_code":"...","user_id":"..."}'}
+                rows={5}
+                spellCheck={false}
+              />
+            </label>
+            <p className="settings-section__desc">
+              3. Fetch and save the display name associated with that user ID.
+            </p>
+            <label className="settings-label">
+              Warframe Display Name
               <input
                 className="settings-input"
                 type="text"
                 value={inGameName}
-                onChange={e => setInGameName(e.target.value)}
-                required
-                maxLength={50}
-                placeholder="Your in-game name"
-                autoComplete="off"
+                readOnly
+                placeholder="Fetched display name"
               />
             </label>
             <button
-              type="submit"
+              type="button"
               className="settings-btn settings-btn--save"
-              disabled={ignSaving}
+              onClick={handleFetchInGameName}
+              disabled={ignSaving || !warframeUserData.trim()}
             >
-              {ignSaving ? 'Saving…' : 'Update In-Game Name'}
+              {ignSaving ? 'Fetching and saving...' : 'Fetch Display Name'}
             </button>
-          </form>
+          </div>
         </section>
 
         {/* ── Subscription ── */}
