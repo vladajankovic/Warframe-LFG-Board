@@ -6,6 +6,12 @@ export interface Relic {
   name: string
   relicType: string
   relicCode: string
+  drops: RelicDrop[]
+}
+
+export interface RelicDrop {
+  itemName: string
+  rarity: string
 }
 
 export interface Resource {

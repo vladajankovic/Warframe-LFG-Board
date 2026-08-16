@@ -6,6 +6,6 @@
         public required string Name { get; set; }
         public required string RelicType { get; set; }
         public required string RelicCode { get; set; }
-
+        public List<RelicDrop> Drops { get; set; } = [];
     }
 }

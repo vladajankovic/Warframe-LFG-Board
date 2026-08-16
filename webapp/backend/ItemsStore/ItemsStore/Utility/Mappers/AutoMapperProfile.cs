@@ -10,6 +10,7 @@ namespace ItemsStore.Utility.Mappers
         {
             CreateMap<RelicEntity, Relic>()
                 .ForMember(dest => dest.RelicType, opt => opt.MapFrom(src => src.RelicType.ToString().ToLower()));
+            CreateMap<RelicDropEntity, RelicDrop>();
 
             CreateMap<ResourceEntity, Resource>();
         }

@@ -7,6 +7,7 @@ namespace ItemsStore.Database
     public class ItemsDbContext : DbContext
     {
         public virtual DbSet<RelicEntity> Relics { get; set; }
+        public virtual DbSet<RelicDropEntity> RelicDrops { get; set; }
         public virtual DbSet<ResourceEntity> Resources { get; set; }
 
         public ItemsDbContext()

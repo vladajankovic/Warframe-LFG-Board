@@ -68,12 +68,21 @@ namespace ItemsStore.Tests.Services
         public async Task GetRelic_WhenExists_ReturnsMappedRelic()
         {
             var entity = MakeEntity();
+            entity.Drops.Add(new RelicDropEntity
+            {
+                RelicId = entity.Id,
+                ItemName = "Forma Blueprint",
+                Rarity = "common"
+            });
             _repoMock.Setup(r => r.GetRelic("Lith A1 Intact")).ReturnsAsync(entity);
 
             var result = await _service.GetRelic("Lith A1 Intact");
 
             Assert.NotNull(result);
             Assert.Equal(entity.Name, result.Name);
+            var drop = Assert.Single(result.Drops);
+            Assert.Equal("Forma Blueprint", drop.ItemName);
+            Assert.Equal("common", drop.Rarity);
         }
 
         [Fact]

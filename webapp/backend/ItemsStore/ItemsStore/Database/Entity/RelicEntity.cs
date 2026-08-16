@@ -7,5 +7,6 @@
         public required string RelicName { get; set; }
         public required RelicType RelicType { get; set; }
         public required string RelicCode { get; set; }
+        public ICollection<RelicDropEntity> Drops { get; set; } = [];
     }
 }

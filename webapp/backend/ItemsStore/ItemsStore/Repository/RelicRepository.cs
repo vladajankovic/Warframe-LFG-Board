@@ -57,7 +57,9 @@ namespace ItemsStore.Repository
 
         public async Task<RelicEntity> GetRelic(string name)
         {
-            return await _itemsDbContext.Relics.FirstOrDefaultAsync(x => x.RelicName == name.ToSnakeCase());
+            return await _itemsDbContext.Relics
+                .Include(x => x.Drops)
+                .FirstOrDefaultAsync(x => x.RelicName == name.ToSnakeCase());
         }
 
         public async Task<RelicEntity> UpdateRelic(AddRelicCommand relic)

@@ -26,70 +26,127 @@ namespace ItemsStore.Seed
                 var existingRelicsCount = await _dbContext.Relics.CountAsync();
                 if (existingRelicsCount > 0)
                 {
-                    _logger.LogInformation("Database already contains {Count} relics. Skipping seed.", existingRelicsCount);
-                    return;
+                    _logger.LogInformation(
+                        "Database already contains {Count} relics. Skipping relic seed.",
+                        existingRelicsCount);
                 }
-
-                _logger.LogInformation("Fetching relics from Warframe API...");
-                var relicItems = await _warframeApiUtils.GetAllRelics();
-
-                if (relicItems == null || relicItems.Count == 0)
+                else
                 {
-                    _logger.LogWarning("No relics returned from API.");
-                    return;
-                }
+                    _logger.LogInformation("Fetching relics from Warframe API...");
+                    var relicItems = await _warframeApiUtils.GetAllRelics();
 
-                _logger.LogInformation("Retrieved {Count} relics from API. Processing...", relicItems.Count);
-
-                var relicsToAdd = new List<RelicEntity>();
-
-                foreach (var item in relicItems)
-                {
-                    var relicType = RelicUtils.ExtractRelicType(item.Name);
-
-                    if (relicType == RelicType.UNKNOWN)
+                    if (relicItems.Count == 0)
                     {
-                        _logger.LogWarning("Could not determine type for relic: {Name}", item.Name);
-                        continue;
+                        _logger.LogWarning("No relics returned from API.");
+                        return;
                     }
 
-                    var relicCode = RelicUtils.ExtractRelicCode(item.Name);
+                    _logger.LogInformation("Retrieved {Count} relics from API. Processing...", relicItems.Count);
 
-                    if (string.IsNullOrEmpty(relicCode))
+                    var relicsToAdd = new List<RelicEntity>();
+                    var addedRelics = new HashSet<string>();
+
+                    foreach (var item in relicItems)
                     {
-                        _logger.LogWarning("Could not determine code for relic: {Name}", item.Name);
-                        continue;
+                        var relicType = RelicUtils.ExtractRelicType(item.Name);
+
+                        if (relicType == RelicType.UNKNOWN)
+                        {
+                            _logger.LogWarning("Could not determine type for relic: {Name}", item.Name);
+                            continue;
+                        }
+
+                        var relicCode = RelicUtils.ExtractRelicCode(item.Name);
+
+                        if (string.IsNullOrEmpty(relicCode))
+                        {
+                            _logger.LogWarning("Could not determine code for relic: {Name}", item.Name);
+                            continue;
+                        }
+
+                        var relicName = string.Join(" ", item.Name.Split().SkipLast(1));
+
+                        var relicEntity = new RelicEntity
+                        {
+                            Name = relicName,
+                            RelicName = relicName.ToSnakeCase(),
+                            RelicType = relicType,
+                            RelicCode = relicCode
+                        };
+
+                        if (addedRelics.Add(relicName))
+                        {
+                            relicsToAdd.Add(relicEntity);
+                        }
+
                     }
 
-                    var relicName = string.Join(" ", item.Name.Split().SkipLast(1));
-
-                    var relicEntity = new RelicEntity
+                    if (relicsToAdd.Count == 0)
                     {
-                        Name = relicName,
-                        RelicName = relicName.ToSnakeCase(),
-                        RelicType = relicType,
-                        RelicCode = relicCode
-                    };
+                        _logger.LogWarning("No valid relics to seed.");
+                        return;
+                    }
 
-                    relicsToAdd.Add(relicEntity);
-                }
-
-                if (relicsToAdd.Any())
-                {
                     await _dbContext.Relics.AddRangeAsync(relicsToAdd);
                     await _dbContext.SaveChangesAsync();
                     _logger.LogInformation("Successfully seeded {Count} relics into database.", relicsToAdd.Count);
                 }
-                else
-                {
-                    _logger.LogWarning("No valid relics to seed.");
-                }
+
+                await SeedRelicDrops();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while seeding relics.");
+                _logger.LogError(ex, "Error occurred while seeding relics and their drops.");
                 throw;
             }
+        }
+
+        private async Task SeedRelicDrops()
+        {
+            var relicsWithoutDrops = await _dbContext.Relics
+                .Where(relic => !relic.Drops.Any())
+                .ToListAsync();
+
+            if (relicsWithoutDrops.Count == 0)
+            {
+                _logger.LogInformation("All relics already have drops. Skipping relic drop seed.");
+                return;
+            }
+
+            var dropsAdded = 0;
+            var drops = await _warframeApiUtils.GetAllDropsForRelic();
+
+            foreach (var relic in relicsWithoutDrops)
+            {
+                string fullName = $"{relic.Name} Relic";
+                var relicDrops = drops.Where(x => x.Place.Equals(fullName)).ToList();
+
+                foreach (var drop in relicDrops.DistinctBy(x => x.Item, StringComparer.OrdinalIgnoreCase))
+                {
+                    relic.Drops.Add(new RelicDropEntity
+                    {
+                        RelicId = relic.Id,
+                        ItemName = drop.Item,
+                        Rarity = drop.Chance switch
+                        {
+                            2 => "rare",
+                            11 => "uncommon",
+                            _ => "common"
+                        }
+                    });
+
+                    dropsAdded++;
+                }
+            }
+
+            if (dropsAdded == 0)
+            {
+                _logger.LogWarning("No relic drops were returned from the Warframe API.");
+                return;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Successfully seeded {Count} relic drops into database.", dropsAdded);
         }
 
         public async Task SeedResources()

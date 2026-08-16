@@ -9,6 +9,7 @@ namespace ItemsStore.Utility
         private readonly HttpClient _httpClient;
         private readonly string baseUrl = "https://api.warframestat.us/items";
         private const string ResourcePageUrl = "https://wiki.warframe.com/w/Resources";
+        private const string RelicsDropUrl = "https://api.warframestat.us/drops";
 
         public WarframeApiUtils(HttpClient httpClient)
         {
@@ -27,6 +28,12 @@ namespace ItemsStore.Utility
             if (allItems == null) return [];
             var relics = allItems.Where(item => item.Type == "Relic" && item.Name.EndsWith("Intact")).ToList();
             return relics;
+        }
+
+        public async Task<List<RelicDropDTO>> GetAllDropsForRelic()
+        {
+            var allDrops = await _httpClient.GetFromJsonAsync<List<RelicDropDTO>>(RelicsDropUrl);
+            return allDrops ?? [];
         }
 
         public async Task<List<WikiResourceItemDTO>> GetAllResourcesFromWiki()

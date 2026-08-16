@@ -64,9 +64,14 @@ namespace ItemsStore.Tests.Repository
         // ── GetRelic ─────────────────────────────────────────────────────────────
 
         [Fact]
-        public async Task GetRelic_WhenExists_ReturnsEntity()
+        public async Task GetRelic_WhenExists_ReturnsEntityWithDrops()
         {
             var entity = SeedEntity();
+            entity.Drops.Add(new RelicDropEntity
+            {
+                ItemName = "Forma Blueprint",
+                Rarity = "common"
+            });
             await _context.Relics.AddAsync(entity);
             await _context.SaveChangesAsync();
 
@@ -74,6 +79,9 @@ namespace ItemsStore.Tests.Repository
 
             Assert.NotNull(result);
             Assert.Equal(entity.Name, result.Name);
+            var drop = Assert.Single(result.Drops);
+            Assert.Equal("Forma Blueprint", drop.ItemName);
+            Assert.Equal("common", drop.Rarity);
         }
 
         [Fact]

@@ -22,6 +22,23 @@ namespace ItemsStore.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ItemsStore.Database.Entity.RelicDropEntity", b =>
+                {
+                    b.Property<int>("RelicId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Rarity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("RelicId", "ItemName");
+
+                    b.ToTable("RelicDrops", "ItemsStoreSchema");
+                });
+
             modelBuilder.Entity("ItemsStore.Database.Entity.RelicEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +113,22 @@ namespace ItemsStore.Migrations
                         .IsUnique();
 
                     b.ToTable("Resources", "ItemsStoreSchema");
+                });
+
+            modelBuilder.Entity("ItemsStore.Database.Entity.RelicDropEntity", b =>
+                {
+                    b.HasOne("ItemsStore.Database.Entity.RelicEntity", "Relic")
+                        .WithMany("Drops")
+                        .HasForeignKey("RelicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Relic");
+                });
+
+            modelBuilder.Entity("ItemsStore.Database.Entity.RelicEntity", b =>
+                {
+                    b.Navigation("Drops");
                 });
 #pragma warning restore 612, 618
         }

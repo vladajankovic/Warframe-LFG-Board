@@ -26,7 +26,16 @@ namespace ItemsStore.Tests.Utility
                 Name = "Lith A1",
                 RelicName = "lith_a1",
                 RelicType = RelicType.LITH,
-                RelicCode = "A1"
+                RelicCode = "A1",
+                Drops =
+                [
+                    new RelicDropEntity
+                    {
+                        RelicId = 12345,
+                        ItemName = "Forma Blueprint",
+                        Rarity = "common"
+                    }
+                ]
             };
 
             var relic = _mapper.Map<Relic>(entity);
@@ -36,6 +45,9 @@ namespace ItemsStore.Tests.Utility
             Assert.Equal(entity.RelicCode, relic.RelicCode);
             // RelicType should be the lowercase string representation
             Assert.Equal("lith", relic.RelicType);
+            var drop = Assert.Single(relic.Drops);
+            Assert.Equal("Forma Blueprint", drop.ItemName);
+            Assert.Equal("common", drop.Rarity);
         }
 
         [Theory]
