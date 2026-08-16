@@ -1,4 +1,5 @@
-import { useState, useEffect, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import {
   fetchResources,
@@ -11,6 +12,7 @@ import {
 import { notifyError } from '../api/apiUtils'
 import { AdminTable, type ColumnDef } from '../components/AdminTable'
 import { DeleteModal } from '../components/DeleteModal'
+import { OverflowTooltip } from '../components/OverflowTooltip'
 
 // ── Resource modal ────────────────────────────────────────────────────────────
 
@@ -47,10 +49,10 @@ function ResourceModal({ initial, onClose, onSaved }: ResourceModalProps) {
     }
   }
 
-  return (
-    <div className="modal-overlay">
+  return createPortal(
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="resource-modal-title">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">{isEdit ? 'Edit Resource' : 'Add Resource'}</h2>
+        <h2 id="resource-modal-title" className="modal-title">{isEdit ? 'Edit Resource' : 'Add Resource'}</h2>
         <form className="modal-form" onSubmit={handleSubmit}>
           <label className="modal-label">
             Name
@@ -108,7 +110,8 @@ function ResourceModal({ initial, onClose, onSaved }: ResourceModalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -119,7 +122,7 @@ const COLUMNS: ColumnDef<Resource>[] = [
   { header: 'Region', cell: r => r.region ?? '—' },
   { header: 'Category', cell: r => r.category ?? '—' },
   { header: 'Group', cell: r => r.group ?? '—' },
-  { header: 'Description', cell: r => r.description ?? '—', className: 'admin-table__desc' },
+  { header: 'Description', cell: r => <OverflowTooltip text={r.description} />, className: 'admin-table__desc' },
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────────

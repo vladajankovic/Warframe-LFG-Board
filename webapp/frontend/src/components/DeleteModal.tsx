@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface DeleteModalProps {
   itemName: string
@@ -8,6 +9,7 @@ interface DeleteModalProps {
 }
 
 export function DeleteModal({ itemName, onClose, onConfirm, requirePassword }: DeleteModalProps) {
+  const titleId = useId()
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [password, setPassword] = useState('')
@@ -27,10 +29,10 @@ export function DeleteModal({ itemName, onClose, onConfirm, requirePassword }: D
     }
   }
 
-  return (
-    <div className="modal-overlay">
+  return createPortal(
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div className="modal-card modal-card--sm" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">Delete "{itemName}"?</h2>
+        <h2 id={titleId} className="modal-title">Delete "{itemName}"?</h2>
         <p className="modal-body-text">This action cannot be undone.</p>
         {requirePassword && (
           <label className="settings-label" style={{ marginTop: '0.75rem' }}>
@@ -60,6 +62,7 @@ export function DeleteModal({ itemName, onClose, onConfirm, requirePassword }: D
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

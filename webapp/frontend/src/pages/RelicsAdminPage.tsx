@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import {
   fetchRelics,
@@ -68,10 +69,10 @@ function RelicModal({ initial, onClose, onSaved }: RelicModalProps) {
     }
   }
 
-  return (
-    <div className="modal-overlay">
+  return createPortal(
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="relic-modal-title">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <h2 className="modal-title">{isEdit ? 'Edit Relic' : 'Add Relic'}</h2>
+        <h2 id="relic-modal-title" className="modal-title">{isEdit ? 'Edit Relic' : 'Add Relic'}</h2>
         <form className="modal-form" onSubmit={handleSubmit}>
           <label className="modal-label">
             Name
@@ -115,7 +116,8 @@ function RelicModal({ initial, onClose, onSaved }: RelicModalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

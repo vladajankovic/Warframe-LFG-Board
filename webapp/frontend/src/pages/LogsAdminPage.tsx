@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { fetchAuditLogs, type AuditLog } from '../api/auditApi'
 import { notifyError } from '../api/apiUtils'
 import { AdminTable, type ColumnDef } from '../components/AdminTable'
+import { OverflowTooltip } from '../components/OverflowTooltip'
 
 const COLUMNS: ColumnDef<AuditLog>[] = [
   { header: 'Date', cell: l => new Date(l.dateTime).toLocaleString(), sortKey: l => l.dateTime },
   { header: 'Service', cell: l => l.service, sortKey: l => l.service },
   { header: 'Action', cell: l => l.action, sortKey: l => l.action },
   { header: 'User', cell: l => l.user, sortKey: l => l.user },
-  { header: 'Details', cell: l => l.details ?? '—', className: 'admin-table__desc' },
+  { header: 'Details', cell: l => <OverflowTooltip text={l.details} />, className: 'admin-table__desc' },
 ]
 
 export default function LogsAdminPage() {

@@ -1,24 +1,27 @@
 import { parseApiError } from './apiUtils'
 
 const BASE_URL = '/v1/directory'
-const WARFRAME_PROFILE_URL = 'https://api.warframestat.us/profile'
+const WARFRAME_PROFILE_URL = `${BASE_URL}/warframe-profile/`
+const WARFRAME_PROFILE_URL_FALLBACK = 'https://api.warframestat.us/profile'
 
 interface WarframeUserData {
   user_id?: string
 }
 
 interface WarframeProfileData {
-  accountId?: string
   displayName?: string
 }
 
 export interface User {
+  id: string
   email: string
   role: string
   inGameName: string
   createdAt: string
   lastUpdatedAt: string
   isVerified: boolean
+  subscriptionStatus: 'Active' | 'Inactive'
+  subscriptionExpiryDate: string | null
 }
 
 export interface UpdateUserPayload {
@@ -88,22 +91,28 @@ export async function fetchWarframeDisplayName(userDataJson: string): Promise<st
   let profileResponse: Response
   try {
     profileResponse = await fetch(
-      `${WARFRAME_PROFILE_URL}/${encodeURIComponent(userData.user_id)}`,
+      `${WARFRAME_PROFILE_URL}${encodeURIComponent(userData.user_id)}`,
     )
+
+    if (!profileResponse.ok) {
+      profileResponse = await fetch(
+        `${WARFRAME_PROFILE_URL_FALLBACK}/${encodeURIComponent(userData.user_id)}`,
+      )
+      if (!profileResponse.ok) {
+        throw new Error('Warframe could not load your player profile. Please try again.')
+      }
+    }
+
+    const profile = await profileResponse.json() as WarframeProfileData
+    const displayName = profile.displayName?.trim()
+    if (!displayName) {
+      throw new Error('Your Warframe profile did not contain a display name.')
+    }
+
+    return displayName
   } catch {
     throw new Error('Your browser blocked access to the Warframe profile response.')
   }
-  if (!profileResponse.ok) {
-    throw new Error('Warframe could not load your player profile. Please try again.')
-  }
-
-  const profile = await profileResponse.json() as WarframeProfileData
-  const displayName = profile.displayName?.trim()
-  if (!displayName) {
-    throw new Error('Your Warframe profile did not contain a display name.')
-  }
-
-  return displayName
 }
 
 export async function deleteUser(email: string): Promise<void> {

@@ -36,6 +36,7 @@ namespace UsersDirectory
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
             builder.Services.AddScoped<IUsersService, UserService>();
+            builder.Services.AddHttpClient<IWarframeProfileService, WarframeProfileService>();
             builder.Services.AddScoped<IPasswordHasher<string>, PasswordHasher<string>>();
             builder.Services.AddHostedService<SubscriptionRenewalService>();
 

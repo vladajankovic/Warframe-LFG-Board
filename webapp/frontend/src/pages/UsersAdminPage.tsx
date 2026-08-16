@@ -13,6 +13,12 @@ import { DeleteModal } from '../components/DeleteModal'
 
 const ROLES = ['User', 'Admin']
 
+function formatSubscriptionExpiry(value: string | null): string {
+  if (!value) return '—'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString()
+}
+
 // ── Edit modal ────────────────────────────────────────────────────────────────
 
 interface UserModalProps {
@@ -24,9 +30,10 @@ interface UserModalProps {
 function UserModal({ initial, onClose, onSaved }: UserModalProps) {
   const [role, setRole] = useState(initial.role)
   const [inGameName, setInGameName] = useState(initial.inGameName)
-  const [isVerified, setIsVerified] = useState(initial.isVerified)
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const subscriptionExpiry = formatSubscriptionExpiry(initial.subscriptionExpiryDate)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -35,7 +42,7 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
       email: initial.email,
       role,
       inGameName,
-      isVerified,
+      isVerified: initial.isVerified,
       ...(password ? { password } : {}),
     }
     try {
@@ -53,6 +60,10 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <h2 className="modal-title">Edit User</h2>
         <form className="modal-form" onSubmit={handleSubmit}>
+          <label className="modal-label">
+            User ID
+            <input className="modal-input" value={initial.id} disabled />
+          </label>
           <label className="modal-label">
             Email
             <input className="modal-input" value={initial.email} disabled />
@@ -78,14 +89,13 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
               ))}
             </select>
           </label>
-          <label className="modal-label modal-label--inline">
-            <input
-              type="checkbox"
-              checked={isVerified}
-              onChange={e => setIsVerified(e.target.checked)}
-              disabled={initial.isVerified}
-            />
-            Verified
+          <label className="modal-label">
+            Subscription Status
+            <input className="modal-input" value={initial.subscriptionStatus} disabled />
+          </label>
+          <label className="modal-label">
+            Subscription Expiry Date
+            <input className="modal-input" value={subscriptionExpiry} disabled />
           </label>
           <label className="modal-label">
             New Password
@@ -116,17 +126,28 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const COLUMNS: ColumnDef<User>[] = [
+  {
+    header: 'ID',
+    cell: u => u.id,
+    sortKey: u => u.id,
+    className: 'admin-table__id',
+  },
   { header: 'Email', cell: u => u.email, sortKey: u => u.email },
   { header: 'In-Game Name', cell: u => u.inGameName, sortKey: u => u.inGameName },
   { header: 'Role', cell: u => u.role, sortKey: u => u.role },
   {
-    header: 'Verified',
+    header: 'Subscription',
     cell: u => (
-      <span style={{ color: u.isVerified ? 'var(--accent)' : 'var(--danger)' }}>
-        {u.isVerified ? '✓' : '✗'}
+      <span className={`settings-subscription-badge settings-subscription-badge--${u.subscriptionStatus.toLowerCase()}`}>
+        {u.subscriptionStatus}
       </span>
     ),
-    sortKey: u => (u.isVerified ? 1 : 0),
+    sortKey: u => u.subscriptionStatus,
+  },
+  {
+    header: 'Expiry Date',
+    cell: u => formatSubscriptionExpiry(u.subscriptionExpiryDate),
+    sortKey: u => u.subscriptionExpiryDate ?? '',
   },
   {
     header: 'Created',
@@ -155,9 +176,11 @@ export default function UsersAdminPage() {
   useEffect(() => { load() }, [])
 
   const filtered = users.filter(u =>
+    u.id.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase()) ||
     u.inGameName.toLowerCase().includes(search.toLowerCase()) ||
-    u.role.toLowerCase().includes(search.toLowerCase())
+    u.role.toLowerCase().includes(search.toLowerCase()) ||
+    u.subscriptionStatus.toLowerCase().includes(search.toLowerCase())
   )
 
   async function handleDelete() {
@@ -168,7 +191,7 @@ export default function UsersAdminPage() {
   }
 
   return (
-    <div className="admin-subpage">
+    <div className="admin-subpage admin-subpage--users">
       <div className="admin-subpage__header">
         <Link to="/admin" className="admin-subpage__back">← Admin Panel</Link>
         <h1 className="admin-subpage__title">Users</h1>
@@ -180,8 +203,8 @@ export default function UsersAdminPage() {
         loading={loading}
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by email, in-game name or role…"
-        getRowKey={u => u.email}
+        searchPlaceholder="Search by ID, email, in-game name, role or subscription…"
+        getRowKey={u => u.id}
         emptyMessage="No users found."
         onEdit={u => setEditTarget(u)}
         onDelete={u => setDeleteTarget(u)}
