@@ -16,7 +16,7 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
   const ign = localStorage.getItem('user_ign') ?? ''
 
   const [requests, setRequests] = useState<GroupRequest[]>([])
-  const [hasOwn, setHasOwn] = useState(false)
+  const [ownRequests, setOwnRequests] = useState<GroupRequest[]>([])
   const [loadingList, setLoadingList] = useState(true)
   const [acting, setActing] = useState(false)
   const [contactedIndex, setContactedIndex] = useState<number | null>(null)
@@ -26,10 +26,10 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
     try {
       const [all, mine] = await Promise.all([
         fetchGroupRequestsByItem(itemName),
-        email ? fetchMyGroupRequests() : Promise.resolve([]),
+        email ? fetchMyGroupRequests().catch(() => []) : Promise.resolve([]),
       ])
       setRequests(all)
-      setHasOwn(mine.some(r => r.itemName === itemName))
+      setOwnRequests(mine.filter(r => r.itemName === itemName))
     } catch {
       // silently ignore — list simply stays empty
     } finally {
@@ -65,7 +65,12 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
     }
   }
 
-  const otherRequests = requests.filter(r => r.inGameName !== ign)
+  const hasOwn = ownRequests.length > 0
+  const otherRequests = requests.filter(request =>
+    !ownRequests.some(own =>
+      own.itemName === request.itemName && request.inGameName === ign,
+    ),
+  )
 
   return (
     <div className="gr-section">
@@ -79,30 +84,45 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
         <p className="gr-notice">
           Set your <Link to="/settings" className="gr-link">in-game name</Link> in Settings to request a group.
         </p>
-      ) : hasOwn ? (
-        <div className="gr-item gr-item--own">
-          <img
-            className="gr-item__img"
-            src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
-            alt=""
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-          />
-          <span className="gr-item__name">{ign}</span>
-          <button className="gr-btn gr-btn--remove gr-btn--inline" onClick={handleDelete} disabled={acting}>
-            {acting ? 'Removing…' : 'Remove'}
-          </button>
-        </div>
-      ) : (
-        <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting}>
+      ) : !hasOwn ? (
+        <button className="gr-btn gr-btn--create" onClick={handleCreate} disabled={acting || loadingList}>
           {acting ? 'Requesting…' : '⚑ Request Group'}
         </button>
+      ) : null}
+
+      {loadingList && <p className="gr-notice">Loading…</p>}
+
+      {!loadingList && email && ign && hasOwn && (
+        <div className="gr-request-subsection">
+          <h3 className="gr-request-subsection__title">{ign}&apos;s requests:</h3>
+          <ul className="gr-list">
+            {ownRequests.map(request => (
+              <li key={request.itemName} className="gr-item gr-item--own">
+                <img
+                  className="gr-item__img"
+                  src={`/images/resources/${itemName.replace(/\s+/g, '')}.png`}
+                  alt=""
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                />
+                <span className="gr-item__name">{ign}</span>
+                <button
+                  className="gr-btn gr-btn--remove gr-btn--inline"
+                  onClick={handleDelete}
+                  disabled={acting}
+                  type="button"
+                >
+                  {acting ? 'Removing…' : 'Remove'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
-      {loadingList ? (
-        <p className="gr-notice">Loading…</p>
-      ) : otherRequests.length > 0 ? (
-        <>
-          <div className="gr-divider" />
+      {!loadingList && otherRequests.length > 0 && (
+        <div className="gr-request-subsection">
+          {email && ign && hasOwn && <div className="gr-divider" />}
+          <h3 className="gr-request-subsection__title">Other requests:</h3>
           <ul className="gr-list">
             {otherRequests.map((r, i) => {
               const isContacted = contactedIndex === i
@@ -140,10 +160,8 @@ function GroupRequestSection({ itemName }: { itemName: string }) {
               )
             })}
           </ul>
-        </>
-      ) : !hasOwn ? (
-        <p className="gr-notice">No group requests yet.</p>
-      ) : null}
+        </div>
+      )}
     </div>
   )
 }

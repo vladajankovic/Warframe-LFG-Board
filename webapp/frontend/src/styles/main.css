@@ -891,6 +891,285 @@ body {
   color: #f2d77a;
 }
 
+/* ── Relic rewards ───────────────────────────────────────── */
+.detail-page--relic {
+  max-width: 1050px;
+}
+
+.relic-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.7fr) minmax(520px, 1.4fr);
+  align-items: stretch;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.relic-rewards {
+  width: 100%;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 2);
+  background: rgba(23, 27, 36, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-align: left;
+}
+
+.relic-rewards__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.relic-rewards__title {
+  color: var(--accent);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.relic-rewards__subtitle {
+  margin-top: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.relic-rewards__quality {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid rgba(200, 168, 75, 0.38);
+  border-radius: 999px;
+  background: rgba(200, 168, 75, 0.1);
+  color: #f2d77a;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.relic-rewards__refinements {
+  margin-bottom: 0.9rem;
+}
+
+.relic-rewards__groups {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem 0.45rem;
+  width: 100%;
+}
+
+.relic-reward-group {
+  min-width: 0;
+}
+
+.relic-reward-group--common {
+  grid-column: 1 / -1;
+}
+
+.relic-reward-group__items {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.relic-reward-group--common .relic-reward-group__items {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.relic-reward-group--uncommon .relic-reward-group__items {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.relic-reward-group--rare .relic-reward-group__items {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.relic-reward {
+  position: relative;
+  height: 140px;
+  min-width: 0;
+  overflow: visible;
+  border: 1px solid rgba(150, 136, 94, 0.2);
+  background-color: #101218;
+  background-image:
+    linear-gradient(rgba(184, 164, 103, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184, 164, 103, 0.035) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.018), transparent 58%);
+  background-size: 18px 18px, 18px 18px, 100% 100%;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.38),
+    inset 0 0 28px rgba(0, 0, 0, 0.42),
+    0 7px 16px rgba(0, 0, 0, 0.18);
+}
+
+.relic-reward__visual {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0.55rem;
+  overflow: hidden;
+}
+
+.relic-reward__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.55));
+  transform-origin: center;
+}
+
+.relic-reward__fallback {
+  color: rgba(218, 194, 122, 0.62);
+  font-size: 3.6rem;
+  line-height: 1;
+  text-shadow: 0 0 22px rgba(198, 168, 75, 0.28);
+}
+
+.relic-reward__body {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.35rem;
+  left: 0.55rem;
+  z-index: 2;
+  height: 2.55rem;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  text-align: center;
+}
+
+.relic-reward__name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius);
+  color: #f8cb59;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.12;
+  text-wrap: balance;
+  text-shadow: 0 1px 2px #000, 0 0 8px rgba(193, 159, 72, 0.12);
+}
+
+.relic-reward-group__total {
+  margin-top: 0.42rem;
+}
+
+.relic-reward-group__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.relic-reward-group--common .relic-reward-group__label {
+  color: #c18155;
+}
+
+.relic-reward-group--uncommon .relic-reward-group__label {
+  color: #c7ced8;
+}
+
+.relic-reward-group--rare .relic-reward-group__label {
+  color: #e1b94f;
+}
+
+.relic-reward-group__track {
+  width: 100%;
+  height: 0.3rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  background: rgba(5, 7, 10, 0.72);
+}
+
+.relic-reward-group__fill {
+  display: block;
+  min-width: 0.35rem;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.relic-reward-group__fill--common {
+  background: linear-gradient(90deg, #754122, #b9794d);
+  box-shadow: 0 0 8px rgba(166, 106, 63, 0.35);
+}
+
+.relic-reward-group__fill--uncommon {
+  background: linear-gradient(90deg, #7e8794, #d4dae2);
+  box-shadow: 0 0 8px rgba(191, 198, 209, 0.35);
+}
+
+.relic-reward-group__fill--rare {
+  background: linear-gradient(90deg, #9f7418, #e4be51);
+  box-shadow: 0 0 8px rgba(214, 170, 59, 0.42);
+}
+
+.relic-rewards__empty {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+@media (max-width: 1050px) {
+  .relic-detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-page--relic .detail-card {
+    padding: 2rem 1rem;
+  }
+
+  .relic-rewards {
+    padding: 1rem;
+  }
+
+  .relic-rewards__header {
+    align-items: center;
+  }
+
+  .relic-rewards__groups {
+    grid-template-columns: 1fr;
+  }
+
+  .relic-reward-group--common {
+    grid-column: auto;
+  }
+
+  .relic-reward-group--common .relic-reward-group__items {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 430px) {
+  .relic-reward-group__items,
+  .relic-reward-group--common .relic-reward-group__items,
+  .relic-reward-group--uncommon .relic-reward-group__items {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Auth page ────────────────────────────────────────────── */
 .auth-page {
   display: flex;
@@ -1928,6 +2207,20 @@ body {
   letter-spacing: 0.08em;
 }
 
+.gr-request-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.gr-request-subsection__title {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .gr-tabs {
   display: flex;
   gap: 0.4rem;
@@ -1969,7 +2262,8 @@ body {
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
-  min-height: 5rem;
+  height: 5.15rem;
+  min-height: 5.15rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -2006,7 +2300,7 @@ body {
 
 .gr-item__refinement {
   margin-left: auto;
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: var(--accent);
   background: rgba(200, 168, 75, 0.1);
   border: 1px solid rgba(200, 168, 75, 0.25);
@@ -2089,6 +2383,17 @@ body {
   background: rgba(224, 92, 92, 0.15);
   color: var(--danger);
   border: 1px solid rgba(224, 92, 92, 0.35);
+}
+
+.gr-btn--contact,
+.gr-btn--close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 5rem;
+  width: 5rem;
+  height: 2rem;
+  padding: 0.2rem 0.6rem;
 }
 
 .gr-contact-input {
