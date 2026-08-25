@@ -287,7 +287,7 @@ namespace UsersDirectory.Services
             return _mapper.Map<User>(updatedUser);
         }
 
-        public async Task<bool> DeleteAccount(AddUserCommand user)
+        public async Task<bool> DeleteAccount(DeleteUserCommand user)
         {
             var foundUser = await _userRepository.GetUser(user.Email);
 

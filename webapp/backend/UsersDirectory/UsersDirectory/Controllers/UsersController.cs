@@ -173,7 +173,7 @@ namespace UsersDirectory.Controllers
 
         [HttpDelete("user/me/delete")]
         [Authorize]
-        public async Task<IActionResult> DeleteAccount([FromBody] AddUserCommand command)
+        public async Task<IActionResult> DeleteAccount([FromBody] DeleteUserCommand command)
         {
             string? email = User.FindFirstValue(ClaimTypes.Email);
 

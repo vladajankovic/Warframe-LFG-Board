@@ -60,6 +60,7 @@ namespace UsersDirectory
             builder.Services.AddTransient<IValidator<AddUserCommand>, AddUserCommandValidator>();
             builder.Services.AddTransient<IValidator<UpdateUserCommand>, UpdateUserCommandValidator>();
             builder.Services.AddTransient<IValidator<ChangePasswordCommand>, ChangePasswordCommandValidator>();
+            builder.Services.AddTransient<IValidator<DeleteUserCommand>, DeleteUserCommandValidator>();
 
             builder.Services.AddFluentValidationAutoValidation();
 

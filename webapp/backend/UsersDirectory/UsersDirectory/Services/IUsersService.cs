@@ -13,7 +13,7 @@ namespace UsersDirectory.Services
         public Task<User> UpdateUser(UpdateUserCommand command);
         public Task<User> ChangePassword(ChangePasswordCommand command);
         public Task<User> UpdateInGameName(UpdateInGameNameCommand command);
-        public Task<bool> DeleteAccount(AddUserCommand command);
+        public Task<bool> DeleteAccount(DeleteUserCommand command);
         public Task<SubscriptionInfo> ActivateSubscription(string email);
         public Task<SubscriptionInfo> CancelSubscription(string email);
         public Task<SubscriptionInfo> GetSubscription(string email);
