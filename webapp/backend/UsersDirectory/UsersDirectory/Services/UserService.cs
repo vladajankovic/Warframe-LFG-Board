@@ -196,18 +196,6 @@ namespace UsersDirectory.Services
             };
         }
 
-        public async Task<bool> IsUserVerified(string email)
-        {
-            var foundUser = await _userRepository.GetUser(email);
-
-            if (foundUser == null)
-            {
-                return false;
-            }
-
-            return foundUser.IsVerified;
-        }
-
         public async Task<User> ChangePassword(ChangePasswordCommand user)
         {
             var foundUser = await _userRepository.GetUser(user.Email);
@@ -238,8 +226,7 @@ namespace UsersDirectory.Services
                     Email = user.Email,
                     Password = user.NewPassword,
                     Role = foundUser.Role,
-                    InGameName = foundUser.InGameName,
-                    IsVerified = foundUser.IsVerified
+                    InGameName = foundUser.InGameName
                 }
             );
 
@@ -277,8 +264,7 @@ namespace UsersDirectory.Services
                     Email = foundUser.Email,
                     Password = foundUser.Password,
                     Role = foundUser.Role,
-                    InGameName = command.InGameName,
-                    IsVerified = foundUser.IsVerified
+                    InGameName = command.InGameName
                 }
             );
 

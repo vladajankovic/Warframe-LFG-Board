@@ -23,8 +23,6 @@ namespace UsersDirectory.Validators
                 .WithMessage("Role is required.");
             RuleFor(x => x.InGameName).NotEmpty()
                 .WithMessage("InGameName is required.");
-            RuleFor(x => x.IsVerified).NotEmpty()
-                .WithMessage("IsVerified is required.");
         }
     }
 }

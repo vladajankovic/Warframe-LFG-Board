@@ -19,7 +19,6 @@ export interface User {
   inGameName: string
   createdAt: string
   lastUpdatedAt: string
-  isVerified: boolean
   subscriptionStatus: 'Active' | 'Inactive'
   subscriptionExpiryDate: string | null
 }
@@ -29,7 +28,6 @@ export interface UpdateUserPayload {
   password?: string
   role?: string
   inGameName?: string
-  isVerified?: boolean
 }
 
 function authHeaders(): HeadersInit {

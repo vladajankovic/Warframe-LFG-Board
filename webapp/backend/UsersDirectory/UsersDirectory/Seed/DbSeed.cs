@@ -46,9 +46,7 @@ namespace UsersDirectory.Seed
                         Password = newUser.Password,
                         Role = "Admin",
                         CreatedAt = DateTime.UtcNow,
-                        LastUpdatedAt = DateTime.UtcNow,
-                        VerificationCode = Guid.NewGuid().ToString("N"),
-                        IsVerified = true
+                        LastUpdatedAt = DateTime.UtcNow
                     };
 
                     await _dbContext.Users.AddAsync(userEntity);

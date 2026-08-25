@@ -42,7 +42,6 @@ function UserModal({ initial, onClose, onSaved }: UserModalProps) {
       email: initial.email,
       role,
       inGameName,
-      isVerified: initial.isVerified,
       ...(password ? { password } : {}),
     }
     try {

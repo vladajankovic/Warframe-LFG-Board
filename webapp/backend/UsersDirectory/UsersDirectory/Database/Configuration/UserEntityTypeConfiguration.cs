@@ -28,12 +28,6 @@ namespace UsersDirectory.Database.Configuration
                 .IsRequired();
             builder.Property(x => x.LastUpdatedAt)
                 .IsRequired();
-            builder.Property(x => x.VerificationCode)
-                .IsRequired()
-                .HasMaxLength(64);
-            builder.Property(x => x.IsVerified)
-                .IsRequired()
-                .HasDefaultValue(false);
         }
     }
 }

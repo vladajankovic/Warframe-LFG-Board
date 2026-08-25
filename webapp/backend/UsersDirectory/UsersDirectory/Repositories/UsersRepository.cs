@@ -22,8 +22,7 @@ namespace UsersDirectory.Repositories
                 Email = command.Email,
                 Password = command.Password,
                 CreatedAt = DateTime.UtcNow,
-                LastUpdatedAt = DateTime.UtcNow,
-                VerificationCode = Guid.NewGuid().ToString("N")
+                LastUpdatedAt = DateTime.UtcNow
             };
 
             await _dbContext.AddAsync(userEntity);
@@ -71,8 +70,6 @@ namespace UsersDirectory.Repositories
             }
 
             userEntity.InGameName = command.InGameName;
-
-            userEntity.IsVerified = command.IsVerified;
 
             userEntity.LastUpdatedAt = DateTime.UtcNow;
 
