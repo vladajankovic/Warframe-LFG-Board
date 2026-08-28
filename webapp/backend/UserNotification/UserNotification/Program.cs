@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RabbitMQ.Client;
+using System.Reflection;
 using System.Text;
 using UserNotification.Broker.RabbitMQ;
 using UserNotification.Database;
 using UserNotification.Hubs;
 using UserNotification.Repositories;
 using UserNotification.Services;
+using UserNotification.Utility.Mappers;
 
 namespace UserNotification
 {
@@ -23,6 +25,8 @@ namespace UserNotification
             builder.Services.AddDbContext<NotificationsDbContext>(options =>
                 options.UseNpgsql(connectionString, npgsql =>
                     npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "UserNotificationsSchema")));
+
+            builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AutoMapperProfile)));
 
             builder.Services.AddScoped<IUserFavoritesRepository, UserFavoritesRepository>();
             builder.Services.AddScoped<IUserNotificationsRepository, UserNotificationsRepository>();

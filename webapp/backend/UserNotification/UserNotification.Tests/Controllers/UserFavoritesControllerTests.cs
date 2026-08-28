@@ -35,7 +35,7 @@ namespace UserNotification.Tests.Controllers
             var result = await controller.AddFavoriteItemForNotification("Forma");
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Inactive", badRequest.Value);
+            Assert.Equal("You need an active subscription to listen for notifications for favorite items.", badRequest.Value);
             serviceMock.Verify(
                 s => s.Create(It.IsAny<AddOrRemoveUserFavoritesCommand>()),
                 Times.Never);

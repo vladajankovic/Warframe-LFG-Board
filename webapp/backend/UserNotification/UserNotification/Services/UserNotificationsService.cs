@@ -1,3 +1,4 @@
+using AutoMapper;
 using UserNotification.Database.Entities;
 using UserNotification.Models;
 using UserNotification.Repositories;
@@ -12,17 +13,20 @@ namespace UserNotification.Services
         private readonly IUserFavoritesRepository _favoritesRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<UserNotificationsService> _logger;
+        private readonly IMapper _mapper;
 
         public UserNotificationsService(
             IUserNotificationsRepository notificationsRepository,
             IUserFavoritesRepository favoritesRepository,
             IConfiguration configuration,
-            ILogger<UserNotificationsService> logger)
+            ILogger<UserNotificationsService> logger,
+            IMapper mapper)
         {
             _notificationsRepository = notificationsRepository;
             _favoritesRepository = favoritesRepository;
             _configuration = configuration;
             _logger = logger;
+            _mapper = mapper;
         }
 
         public Task<UserNotificationEntity> Create(
@@ -52,7 +56,7 @@ namespace UserNotification.Services
             var notBefore = DateTime.UtcNow.AddMinutes(-GetCleanupAfterMinutes());
             var notifications = await _notificationsRepository.GetPendingForUser(userId, favoriteItemNames, notBefore);
 
-            return notifications.Select(MapToModel).ToList();
+            return _mapper.Map<List<GroupRequestNotification>>(notifications);
         }
 
         public Task<bool> Dismiss(string userId, string notificationId)
@@ -72,18 +76,6 @@ namespace UserNotification.Services
             }
 
             return DefaultCleanupAfterMinutes;
-        }
-
-        private static GroupRequestNotification MapToModel(UserNotificationEntity entity)
-        {
-            return new GroupRequestNotification
-            {
-                Id = entity.Id,
-                GroupRequestUserId = entity.GroupRequestUserId,
-                ItemName = entity.ItemName,
-                InGameName = entity.InGameName,
-                CreatedAt = entity.CreatedAt
-            };
         }
     }
 }

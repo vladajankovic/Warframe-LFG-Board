@@ -1,9 +1,11 @@
+using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using UserNotification.Database.Entities;
 using UserNotification.Repositories;
 using UserNotification.Services;
+using UserNotification.Utility.Mappers;
 using Xunit;
 
 namespace UserNotification.Tests.Services
@@ -13,6 +15,7 @@ namespace UserNotification.Tests.Services
         private readonly Mock<IUserNotificationsRepository> _notificationsRepositoryMock;
         private readonly Mock<IUserFavoritesRepository> _favoritesRepositoryMock;
         private readonly Mock<ILogger<UserNotificationsService>> _loggerMock;
+        private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly UserNotificationsService _service;
 
@@ -21,6 +24,8 @@ namespace UserNotification.Tests.Services
             _notificationsRepositoryMock = new Mock<IUserNotificationsRepository>();
             _favoritesRepositoryMock = new Mock<IUserFavoritesRepository>();
             _loggerMock = new Mock<ILogger<UserNotificationsService>>();
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<AutoMapperProfile>());
+            _mapper = config.CreateMapper();
             _configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -32,7 +37,8 @@ namespace UserNotification.Tests.Services
                 _notificationsRepositoryMock.Object,
                 _favoritesRepositoryMock.Object,
                 _configuration,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _mapper);
         }
 
         [Fact]
