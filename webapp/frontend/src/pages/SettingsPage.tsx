@@ -248,6 +248,7 @@ export default function SettingsPage() {
         {/* ── Subscription ── */}
         <section className="settings-section">
           <h2 className="settings-section__title">Subscription</h2>
+          <span></span>
           <div className="settings-info">
             <div className="settings-info__row">
               <span className="settings-info__label">Status</span>
