@@ -407,7 +407,7 @@ namespace UsersDirectory.Services
                 throw new InvalidOperationException("Subscription is already inactive.");
             }
 
-            var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Inactive, foundUser.SubscriptionExpiryDate);
+            var updatedEntity = await _userRepository.UpdateSubscription(email, SubscriptionStatus.Inactive, DateTime.UtcNow);
 
             try
             {
