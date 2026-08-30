@@ -432,9 +432,10 @@ body {
 }
 
 .resource-fade {
+  margin: 10px 0 10px 0;
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
 }
 
 .resource-fade__img {
