@@ -11,5 +11,6 @@ namespace GroupRequests.Repositories
         public Task<GroupRequestEntity> GetGroupRequest(string userId, string itemName);
         public Task<GroupRequestEntity> CreateGroupRequest(AddGroupRequestCommand command);
         public Task<bool> DeleteGroupRequest(DeleteGroupRequestCommand command);
+        public Task<int> DeleteAllGroupRequestForUser(string userId);
     }
 }

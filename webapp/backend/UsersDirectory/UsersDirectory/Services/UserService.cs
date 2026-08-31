@@ -79,6 +79,11 @@ namespace UsersDirectory.Services
             {
                 try
                 {
+                    var deleteMessage = new UserDeletedEventMessage(user.Id);
+
+                    await _rabbitMQPublisher.PublishAsync("directory-user-deleted", deleteMessage);
+                    await _rabbitMQPublisher.PublishAsync("directory-user-deleted-gr", deleteMessage);
+
                     var message = new AuditEventMessage(
                         "Delete",
                         user.Id,
@@ -309,6 +314,11 @@ namespace UsersDirectory.Services
             {
                 try
                 {
+                    var deleteMessage = new UserDeletedEventMessage(foundUser.Id);
+
+                    await _rabbitMQPublisher.PublishAsync("directory-user-deleted", deleteMessage);
+                    await _rabbitMQPublisher.PublishAsync("directory-user-deleted-gr", deleteMessage);
+
                     var message = new AuditEventMessage(
                         "Delete",
                         user.Email,

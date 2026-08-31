@@ -51,6 +51,8 @@ namespace GroupRequests
 
             builder.Services.AddSingleton<IConnectionFactory>(connectionFactory);
             builder.Services.AddScoped<IRabbitMQPublisher, RabbitMQPublisher>();
+            builder.Services.AddSingleton<IBrokerEventConsumer, GroupRequestsEventConsumer>();
+            builder.Services.AddHostedService<GroupRequestsEventConsumerHostedService>();
 
             builder.Services.AddTransient<IValidator<AddGroupRequestCommand>, AddGroupRequestCommandValidator>();
             builder.Services.AddTransient<IValidator<DeleteGroupRequestCommand>, DeleteGroupRequestCommandValidator>();

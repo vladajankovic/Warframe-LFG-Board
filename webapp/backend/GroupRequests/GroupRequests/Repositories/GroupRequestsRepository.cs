@@ -42,6 +42,17 @@ namespace GroupRequests.Repositories
             return true;
         }
 
+        public async Task<int> DeleteAllGroupRequestForUser(string userId)
+        {
+            var entities = await GetGroupRequestsByUserId(userId);
+
+            _dbContext.GroupRequests.RemoveRange(entities);
+
+            await _dbContext.SaveChangesAsync();
+
+            return entities.Count;
+        }
+
         public async Task<List<GroupRequestEntity>> GetAllGroupRequests()
         {
             return await _dbContext.GroupRequests.ToListAsync();
